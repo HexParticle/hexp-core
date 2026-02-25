@@ -1,0 +1,7 @@
+build/
+lib/
+*.so
+*.a
+bin/
+*.s
+*.S

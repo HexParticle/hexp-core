@@ -3,7 +3,7 @@ EXT_LIBS = -lpcap
 BASE_FLAGS = -I./include -fPIC -Wall -Wextra -pedantic -ggdb -O3 # -DRUN_MAIN
 O_FLAGS := $(BASE_FLAGS)
 
-LIB_BUILD_DIR := ./lib
+LIB_BUILD_DIR := /usr/local/lib/HexParticle
 OBJ_BUILD_DIR := ./build
 
 SRC_DIR := ./src

@@ -15,6 +15,8 @@ typedef enum ProtocolType {
     PROTO_ARP,
     PROTO_TCP,
     PROTO_UDP,
+	PROTO_ICMP,
+	PROTO_ICMPV6,
     PROTO_RAW
 } ProtocolType_t;
 

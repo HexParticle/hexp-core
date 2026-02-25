@@ -7,6 +7,7 @@
 #include "tcp_parser.h"
 #include "proto_node.h"
 #include "udp_parser.h"
+#include "icmp_parser.h"
 #include "ip.h"
 
 #include <string.h>
@@ -36,15 +37,20 @@ ProtocolNode_t* parse_ipv4_packet(const uint8_t* stream) {
 	ip_node->type = PROTO_IPV4;
 	ip_node->hdr = ip_header;
 
-	int skip_proto = 0; // do not skip the protocol
+	const uint8_t* l4_payload_start = stream + (ihl * 4);
 
 	if (ip_header->proto == IPPROTO_TCP) {
-        const uint8_t* tcp_stream = stream + (ihl * 4);
-		ip_node->next = parse_tcp_packet(tcp_stream);
+		ip_node->next = parse_tcp_packet(l4_payload_start);
 	}
 	else if (ip_header->proto == IPPROTO_UDP) {
-        const uint8_t* udp_stream = stream + UDP_HEADER_LEN;
-		ip_node->next = parse_udp_packet(udp_stream);
+		ip_node->next = parse_udp_packet(l4_payload_start);
+	}
+	else if (ip_header->proto == IPPROTO_ICMP) {
+		const RawPacketStream_t stream = {
+			.stream = l4_payload_start,
+			.length = 0x0
+		};
+		ip_node->next = parse_icmp_packet(&stream);
 	}
 	return ip_node;
 }

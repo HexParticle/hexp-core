@@ -23,8 +23,10 @@ typedef struct _HexInstnace {
 } HexInstnace_t;
 
 typedef struct _RawPacketStream {
-	uint8_t* 	stream;
-	size_t		length;
+	const uint8_t* 	stream;
+	size_t			length;
+	size_t			payload_len;
+	size_t			read_off; /* Offset to read the stream from. */
 } RawPacketStream_t;
 
 /**

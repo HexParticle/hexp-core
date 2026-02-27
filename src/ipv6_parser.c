@@ -46,6 +46,7 @@ static IPV6ExtHeaderChain_t parse_ipv6_ext_hdrs(ProtocolNode_t* parent, const ui
 		ProtocolNode_t* ext_node = create_proto_node();
 		ext_node->next = ext->next_hdr;
 		ext_node->hdr = ext;
+		ext_node->type = PROTO_IPV6_EXT;
 
 		current->next = ext_node;
 		current = ext_node;

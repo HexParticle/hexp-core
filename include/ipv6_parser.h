@@ -30,6 +30,12 @@ typedef struct __attribute__((packed)) IPV6ExtHeader {
     uint8_t hdr_ext_len; 	/* Header extension length */
 } IPV6ExtHeader_t;
 
+typedef struct __attribute__((packed)) IPV6ExtHeaderChain {
+	ProtocolNode_t* last_node; /* The last header in the extension chain */
+	uint8_t			next_proto;
+	size_t			offset;
+} IPV6ExtHeaderChain_t;
+
 /**
  * IPv6 header structure.
  */

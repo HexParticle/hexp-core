@@ -34,7 +34,21 @@ typedef struct __attribute__((packed)) ICMPHeader {
 	uint8_t		type;
 	uint8_t		code;
 	uint16_t	cksum;
-	uint32_t	rest;
+	union {
+        struct {
+            uint16_t id;
+            uint16_t seq;
+        } echo;
+
+        uint32_t gateway;
+
+        struct {
+            uint16_t unused;
+            uint16_t mtu;
+        } frag;
+
+        uint32_t raw;
+    } rest;
 } ICMPHeader_t;
 
 /**

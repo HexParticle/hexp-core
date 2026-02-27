@@ -13,7 +13,7 @@ ProtocolNode_t* parse_icmp_packet(const RawPacketStream_t* stream) {
 	icmp_hdr->type 		= raw[0];
 	icmp_hdr->code 		= raw[1];
 	icmp_hdr->cksum 	= ((uint16_t) raw[2] << 8) | (uint8_t) raw[3];
-	icmp_hdr->rest		= 
+	icmp_hdr->rest.raw	= 
 		((uint32_t) raw[4] << 24) | 
 		((uint32_t) raw[5] << 16) | 
 		((uint32_t) raw[6] << 8) | 

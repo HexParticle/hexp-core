@@ -52,7 +52,7 @@ typedef struct __attribute__((packed)) IPV6Header {
 // sanity checks
 _Static_assert(sizeof(IPV6Header_t) == 40, "IPV6Header_t's length must be 40 bytes");
 
-HEX_P ProtocolNode_t* parse_ipv6_packet(const struct raw_pack_stream*);
+HEX_P ProtocolNode_t* parse_ipv6_packet(struct raw_pack_stream*);
 
 HEX_P inline uint8_t ipv6_version(const IPV6Header_t*);
 

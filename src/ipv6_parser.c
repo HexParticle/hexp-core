@@ -25,25 +25,30 @@ static inline int is_ipv6_ext(uint8_t nh) {
     }
 }
 
-static IPV6ExtHeaderChain_t parse_ipv6_ext_hdrs(ProtocolNode_t* parent, const uint8_t* raw, uint8_t next) {
+static struct IPV6ExtHeaderChain parse_ipv6_ext_hdrs(
+	struct ProtocolNode* parent, 
+	struct raw_pack_stream* rps,
+	uint8_t next
+) {
 	size_t offset = IPV6_HEADER_LEN;
-	ProtocolNode_t* current = parent;
+	struct ProtocolNode* current = parent;
+	const uint8_t* raw = rps_read_ptr(rps);
 
 	while (is_ipv6_ext(next)) {
-		const IPV6ExtHeader_t* ext = malloc(sizeof(IPV6ExtHeader_t));
-		memcpy(ext, raw + offset, sizeof(IPV6ExtHeader_t));
+		const struct IPV6ExtHeader* ext = malloc(sizeof(struct IPV6ExtHeader));
+		memcpy(ext, raw + offset, sizeof(struct IPV6ExtHeader));
 
 		size_t ext_len;
 		if (ext->next_hdr == IPV6_EXT_FRAGMENT) {
 			ext_len = 8; // always 8
 		}
 		else {
-			// For more information about the following formula, visit:
+			// For more information about the formula, visit:
 			//	  https://en.wikipedia.org/wiki/IPv6_packet#Extension_headers
 			ext_len = (ext->hdr_ext_len + 1) * 8;
 		}
 
-		ProtocolNode_t* ext_node = create_proto_node();
+		struct ProtocolNode* ext_node = create_proto_node();
 		ext_node->hdr = ext;
 		ext_node->type = PROTO_IPV6_EXT;
 
@@ -54,7 +59,7 @@ static IPV6ExtHeaderChain_t parse_ipv6_ext_hdrs(ProtocolNode_t* parent, const ui
 		offset += ext_len;
 	}
 
-	IPV6ExtHeaderChain_t chain = {
+	struct IPV6ExtHeaderChain chain = {
 		.last_node = current,
 		.next_proto = next,
 		.offset = offset
@@ -63,10 +68,10 @@ static IPV6ExtHeaderChain_t parse_ipv6_ext_hdrs(ProtocolNode_t* parent, const ui
 	return chain;
 }
 
-ProtocolNode_t* parse_ipv6_packet(const struct raw_pack_stream* stream) {
-	IPV6Header_t* ip_hdr = malloc(sizeof(IPV6Header_t));
+ProtocolNode_t* parse_ipv6_packet(struct raw_pack_stream* stream) {
+	struct IPV6Header* ip_hdr = malloc(IPV6_HEADER_LEN);
 
-	const uint8_t* raw = stream->stream;
+	const uint8_t* raw = rps_read_ptr(stream);
 
 	ip_hdr->ver_tc_fl = 
 			((uint32_t) raw[0] << 24) |
@@ -84,15 +89,17 @@ ProtocolNode_t* parse_ipv6_packet(const struct raw_pack_stream* stream) {
 	memcpy(ip_hdr->src, raw + 8, IPV6_ADDR_LEN);
 	memcpy(ip_hdr->dst, raw + 24, IPV6_ADDR_LEN);
 	
-	ProtocolNode_t* ip_node = create_proto_node();
+	struct ProtocolNode* ip_node = create_proto_node();
 	ip_node->type = PROTO_IPV6;
 	ip_node->hdr = ip_hdr;
 
 	uint8_t next = ip_hdr->next_hdr;
-	IPV6ExtHeaderChain_t chain = parse_ipv6_ext_hdrs(ip_hdr, raw, next);
+
+	rps_seek(stream, IPV6_HEADER_LEN);
+	struct IPV6ExtHeaderChain chain = parse_ipv6_ext_hdrs(ip_hdr, stream, next);
 
 	const* next_lyr_stream = raw + chain.offset;
-	ProtocolNode_t* last_node = chain.last_node;
+	struct ProtocolNode* last_node = chain.last_node;
 
 	if (next == IPPROTO_TCP) {
 		last_node->next = parse_tcp_packet(next_lyr_stream);

@@ -55,7 +55,7 @@ ProtocolNode_t* parse_ether_packet(const uint8_t* stream, size_t len) {
 		ether_node->next = parse_arp_packet((stream + payload_off));
 	}
 	else if (eth_header->type == ETHER_TYPE_IPV6) {
-		RawPacketStream_t raw_stream = { .stream = stream + payload_off, .length = len };
+		struct raw_pack_stream raw_stream = rps_create(stream + payload_off, len);
 		ether_node->next = parse_ipv6_packet(&raw_stream);
 	}
 

@@ -46,7 +46,7 @@ ProtocolNode_t* parse_ipv4_packet(const uint8_t* stream) {
 		ip_node->next = parse_udp_packet(l4_payload_start);
 	}
 	else if (ip_header->proto == IPPROTO_ICMP) {
-		const RawPacketStream_t stream = {
+		const struct raw_pack_stream stream = {
 			.stream = l4_payload_start,
 			.length = 0x0
 		};

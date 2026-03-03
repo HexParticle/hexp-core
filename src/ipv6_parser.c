@@ -44,7 +44,6 @@ static IPV6ExtHeaderChain_t parse_ipv6_ext_hdrs(ProtocolNode_t* parent, const ui
 		}
 
 		ProtocolNode_t* ext_node = create_proto_node();
-		ext_node->next = ext->next_hdr;
 		ext_node->hdr = ext;
 		ext_node->type = PROTO_IPV6_EXT;
 
@@ -64,7 +63,7 @@ static IPV6ExtHeaderChain_t parse_ipv6_ext_hdrs(ProtocolNode_t* parent, const ui
 	return chain;
 }
 
-ProtocolNode_t* parse_ipv6_packet(const RawPacketStream_t* stream) {
+ProtocolNode_t* parse_ipv6_packet(const struct raw_pack_stream* stream) {
 	IPV6Header_t* ip_hdr = malloc(sizeof(IPV6Header_t));
 
 	const uint8_t* raw = stream->stream;
@@ -93,15 +92,16 @@ ProtocolNode_t* parse_ipv6_packet(const RawPacketStream_t* stream) {
 	IPV6ExtHeaderChain_t chain = parse_ipv6_ext_hdrs(ip_hdr, raw, next);
 
 	const* next_lyr_stream = raw + chain.offset;
+	ProtocolNode_t* last_node = chain.last_node;
 
 	if (next == IPPROTO_TCP) {
-		chain.last_node->next = parse_tcp_packet(next_lyr_stream);
+		last_node->next = parse_tcp_packet(next_lyr_stream);
 	}
 	else if (next == IPPROTO_UDP) {
-		chain.last_node->next = parse_udp_packet(next_lyr_stream);
+		last_node->next = parse_udp_packet(next_lyr_stream);
 	}
 
-	return ip_node;
+	return last_node;
 }
 
 inline uint8_t ipv6_version(const IPV6Header_t *h) {

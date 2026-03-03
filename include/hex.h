@@ -22,13 +22,6 @@ typedef struct _HexInstnace {
     pcap_t* 	handle;	/* libpcap session handle */
 } HexInstnace_t;
 
-typedef struct _RawPacketStream {
-	const uint8_t* 	stream;
-	size_t			length;
-	size_t			payload_len;
-	size_t			read_off; /* Offset to read the stream from. */
-} RawPacketStream_t;
-
 /**
  * @brief Initializes a live capture session on the specified network device.
  * @param device The name of the interface (e.g., "eth0").

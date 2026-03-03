@@ -8,7 +8,8 @@
 
 #include "hex.h"
 #include "proto_node.h"
+#include "raw_stream.h"
 
-HEX_P ProtocolNode_t* parse_dns_packet(const RawPacketStream_t*);
+HEX_P ProtocolNode_t* parse_dns_packet(const struct raw_pack_stream*);
 
 #endif

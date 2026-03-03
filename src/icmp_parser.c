@@ -6,7 +6,7 @@
 #include "icmp_parser.h"
 #include <stdlib.h>
 
-ProtocolNode_t* parse_icmp_packet(const RawPacketStream_t* stream) {
+ProtocolNode_t* parse_icmp_packet(const struct raw_pack_stream* stream) {
 	const uint8_t* raw = stream->stream;
 
 	ICMPHeader_t* icmp_hdr = malloc(sizeof(ICMPHeader_t));

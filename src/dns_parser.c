@@ -5,6 +5,6 @@
 
 #include "dns_parser.h"
 
-ProtocolNode_t* parse_dns_packet(const RawPacketStream_t* stream) {
+ProtocolNode_t* parse_dns_packet(const struct raw_pack_stream* stream) {
 	return NULL;
 }

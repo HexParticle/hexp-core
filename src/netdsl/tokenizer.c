@@ -7,65 +7,21 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "netdsl/token.h"
 #include "netdsl/tokenizer.h"
+#include "netdsl/token.h"
 
-int is_ip_char(char c) {
-    return isdigit(c) || c == '.';
-}
-
-int is_mac_char(char c) {
-    return isxdigit(c) || c == ':';
+int is_network_char(char c) {
+    return isalnum(c) || c == '.' || c == ':';
 }
 
 struct token next_token(const char **input) {
     const char *s = *input;
+    struct token tok = {TOKEN_UNKNOWN, ""};
 
     while (*s && isspace(*s)) s++;
 
-    struct token tok;
-    tok.type = TOKEN_UNKNOWN;
-    tok.lexeme[0] = '\0';
-
     if (*s == '\0') {
         tok.type = TOKEN_EOF;
-        return tok;
-    }
-
-    if (strncmp(s, "from", 4) == 0 && !isalnum(s[4])) {
-        tok.type = TOKEN_FROM;
-        strcpy(tok.lexeme, "from");
-        *input = s + 4;
-        return tok;
-    }
-    if (strncmp(s, "to", 2) == 0 && !isalnum(s[2])) {
-        tok.type = TOKEN_TO;
-        strcpy(tok.lexeme, "to");
-        *input = s + 2;
-        return tok;
-    }
-    if (strncmp(s, "and", 3) == 0 && !isalnum(s[3])) {
-        tok.type = TOKEN_AND;
-        strcpy(tok.lexeme, "and");
-        *input = s + 3;
-        return tok;
-    }
-    if (strncmp(s, "ip", 2) == 0 && !isalnum(s[2])) {
-        tok.type = TOKEN_IP;
-        strcpy(tok.lexeme, "ip");
-        *input = s + 2;
-        return tok;
-    }
-    if (strncmp(s, "port", 4) == 0 && !isalnum(s[4])) {
-        tok.type = TOKEN_PORT;
-        strcpy(tok.lexeme, "port");
-        *input = s + 4;
-        return tok;
-    }
-    if (strncmp(s, "mac", 3) == 0 && !isalnum(s[3])) {
-        tok.type = TOKEN_MAC;
-        strcpy(tok.lexeme, "mac");
-        *input = s + 3;
         return tok;
     }
 
@@ -76,37 +32,43 @@ struct token next_token(const char **input) {
         return tok;
     }
 
-    if (isdigit(*s)) {
+    if (is_network_char(*s)) {
         int i = 0;
-        while (isdigit(s[i])) tok.lexeme[i] = s[i], i++;
+        int has_dot = 0;
+        int has_colon = 0;
+        int has_alpha = 0;
+
+        while (is_network_char(s[i]) && i < MAX_LEXEME - 1) {
+            if (s[i] == '.') has_dot = 1;
+            if (s[i] == ':') has_colon = 1;
+            if (isalpha(s[i])) has_alpha = 1;
+            tok.lexeme[i] = s[i];
+            i++;
+        }
         tok.lexeme[i] = '\0';
-        tok.type = TOKEN_NUMBER;
         *input = s + i;
+
+        if (has_colon) {
+            tok.type = TOKEN_MACADDR;
+        } else if (has_dot) {
+            tok.type = TOKEN_IPADDR;
+        } else if (has_alpha) {
+            if (strcmp(tok.lexeme, "from") == 0) 		tok.type = TOKEN_FROM;
+            else if (strcmp(tok.lexeme, "to") == 0) 	tok.type = TOKEN_TO;
+            else if (strcmp(tok.lexeme, "and") == 0) 	tok.type = TOKEN_AND;
+            else if (strcmp(tok.lexeme, "ip") == 0) 	tok.type = TOKEN_IP;
+            else if (strcmp(tok.lexeme, "port") == 0) 	tok.type = TOKEN_PORT;
+            else if (strcmp(tok.lexeme, "mac") == 0) 	tok.type = TOKEN_MAC;
+            else tok.type = TOKEN_UNKNOWN;
+        } else {
+            tok.type = TOKEN_NUMBER;
+        }
         return tok;
     }
 
-    if (is_ip_char(*s)) {
-        int i = 0;
-        while (is_ip_char(s[i])) tok.lexeme[i] = s[i], i++;
-        tok.lexeme[i] = '\0';
-        tok.type = TOKEN_IPADDR;
-        *input = s + i;
-        return tok;
-    }
-
-    if (is_mac_char(*s)) {
-        int i = 0;
-        while (is_mac_char(s[i])) tok.lexeme[i] = s[i], i++;
-        tok.lexeme[i] = '\0';
-        tok.type = TOKEN_MACADDR;
-        *input = s + i;
-        return tok;
-    }
-
-    // Unknown character, skip
     tok.lexeme[0] = *s;
     tok.lexeme[1] = '\0';
     tok.type = TOKEN_UNKNOWN;
-    (*input)++;
+    *input = s + 1;
     return tok;
 }

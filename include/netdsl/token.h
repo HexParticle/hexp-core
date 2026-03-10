@@ -6,6 +6,8 @@
 #ifndef HEXP_TOKEN_H
 #define HEXP_TOKEN_H
 
+#define MAX_LEXEME 64
+
 typedef enum token_type {
     TOKEN_FROM,
     TOKEN_TO,

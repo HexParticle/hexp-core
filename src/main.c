@@ -166,9 +166,41 @@ static void dump_node(ProtocolNode_t* node) {
 	printf("\n");
 }
 
+void bpf_dump_ip_expr(struct ip_expr* e, const char* direction) {
+    printf("%s host %u.%u.%u.%u", direction,
+        (unsigned int)e->value.octets[0],
+        (unsigned int)e->value.octets[1],
+        (unsigned int)e->value.octets[2],
+        (unsigned int)e->value.octets[3]
+    );
+}
+
+void bpf_dump_expr(struct expr* e, const char* direction) {
+    if (e->type == EXPR_IP) {
+        bpf_dump_ip_expr((struct ip_expr*)e->e, direction);
+    }
+}
+
+void bpf_dump_stmt(struct stmt* s) {
+    if (s->type == STMT_FROM) {
+        struct from_stmt* fs = (struct from_stmt*)s->s;
+        
+        if (fs->from) {
+            bpf_dump_expr(fs->from, "src");
+        }
+        if (fs->from && fs->to) {
+            printf(" and ");
+        }
+        if (fs->to) {
+            bpf_dump_expr(fs->to, "dst");
+        }
+        printf("\n");
+    }
+}
+
 #ifdef RUN_MAIN
 int main() {
-    const char *input = "from 100 to 100";
+    const char *input = "from ip 192.8.9.0 to ip 192.123.123.123";
 	struct token* tokens = malloc(sizeof(struct token) * 100);
     struct token tok;
 
@@ -178,12 +210,18 @@ int main() {
         i += 1;
     }
 
-	struct parser_ctx ctx = {.tokens = tokens, .current = 0};
+	struct parser_ctx ctx = {.tokens = tokens, .current = 0, .total = i};
 	struct stmt* s = parse_from_stmt(&ctx);
-	printf("Stmt type: %d\n", s->type);
+
+	if (s) {
+		bpf_dump_stmt(s);
+		free(s);
+	}
+	else {
+		fprintf(stderr, "Couldn't parse a statement");
+	}
 
 	free(tokens);
-	
     return 0;
 }
 

@@ -9,20 +9,22 @@
 #include <stdint.h>
 
 enum bin_expr_type {
-	AND
+	BEXPR_AND
 };
 
 enum expr_type {
-	BIN,
-	LIT
+	EXPR_BIN,
+	EXPR_LIT,
+	EXPR_IP,
+	EXPR_PORT
 };
 
 enum stmt_type {
-	FROM
+	STMT_FROM
 };
 
 struct ip_addr {
-	char octets[4];
+	uint8_t octets[4];
 };
 
 struct ip_expr {

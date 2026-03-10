@@ -5,4 +5,7 @@ lib/
 bin/
 *.s
 *.S
+main.dSYM
 **/*dSYM
+a.out*
+main

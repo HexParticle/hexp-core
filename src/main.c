@@ -11,6 +11,8 @@
 #include "udp_parser.h"
 #include "arp_parser.h"
 #include "icmp.h"
+#include "netdsl/tokenizer.h"
+#include "netdsl/token.h"
 
 #include <stdlib.h>
 
@@ -164,18 +166,28 @@ static void dump_node(ProtocolNode_t* node) {
 }
 
 #ifdef RUN_MAIN
-int main(int argc, char** argv) {
-	HexInstnace_t instance = create_hex_instance("en0");
+int main() {
+    const char *input = "from ip 10.0.0.1 and port 3000 to ip 192.168.0.5";
+    struct token tok;
 
-	while (1) {
-		ProtocolNode_t* result = read_next_packet(&instance);
-		if (result != NULL) {
-			dump_node(result);
-			free_packet(result);
-		}
-	}
-
-	free_hex_instance(&instance);
+    while ((tok = next_token(&input)).type != TOKEN_EOF) {
+        printf("Token: %-12d Lexeme: %s\n", tok.type, tok.lexeme);
+    }
+    return 0;
 }
+
+// int main(int argc, char** argv) {
+// 	HexInstnace_t instance = create_hex_instance("en0");
+
+// 	while (1) {
+// 		ProtocolNode_t* result = read_next_packet(&instance);
+// 		if (result != NULL) {
+// 			dump_node(result);
+// 			free_packet(result);
+// 		}
+// 	}
+
+// 	free_hex_instance(&instance);
+// }
 
 #endif

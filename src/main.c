@@ -13,6 +13,7 @@
 #include "icmp.h"
 #include "netdsl/tokenizer.h"
 #include "netdsl/token.h"
+#include "netdsl/parser.h"
 
 #include <stdlib.h>
 
@@ -167,12 +168,22 @@ static void dump_node(ProtocolNode_t* node) {
 
 #ifdef RUN_MAIN
 int main() {
-    const char *input = "from ip 10.0.0.1 and port 3000 to ip 192.168.0.5";
+    const char *input = "from 100 to 100";
+	struct token* tokens = malloc(sizeof(struct token) * 100);
     struct token tok;
 
+	int i = 0;
     while ((tok = next_token(&input)).type != TOKEN_EOF) {
-        printf("Token: %-12d Lexeme: %s\n", tok.type, tok.lexeme);
+		*(tokens + i) = tok;
+        i += 1;
     }
+
+	struct parser_ctx ctx = {.tokens = tokens, .current = 0};
+	struct stmt* s = parse_from_stmt(&ctx);
+	printf("Stmt type: %d\n", s->type);
+
+	free(tokens);
+	
     return 0;
 }
 

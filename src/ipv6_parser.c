@@ -11,6 +11,18 @@
 
 #include <string.h>
 
+static inline uint8_t ipv6_version(const IPV6Header_t *h) {
+    return (ntohl(h->ver_tc_fl) >> 28) & 0xF;
+}
+
+static inline uint8_t ipv6_traffic_class(const IPV6Header_t *h) {
+    return (ntohl(h->ver_tc_fl) >> 20) & 0xFF;
+}
+
+static inline uint32_t ipv6_flow_label(const IPV6Header_t *h) {
+    return ntohl(h->ver_tc_fl) & 0xFFFFF;
+}
+
 static inline int is_ipv6_ext(uint8_t nh) {
     switch (nh) {
         case IPV6_EXT_HOP_BY_HOP:
@@ -69,6 +81,31 @@ static struct ProtocolNode* parse_ipv6_ext_frag_hdr(
 	return ext_node;
 }
 
+/**
+ * Parse IPV6 options extension header.
+ * This function is unrefined.
+ */
+static struct ipv6_ext_opts_hdr* parse_ipv6_ext_opts(
+	struct raw_pack_stream* rps, 
+	struct ipv6_ext_base base
+) {
+	const uint8_t* raw = rps_read_ptr(rps);
+	size_t length = base.hdr_ext_len; // length of the options[] field
+
+	struct ipv6_ext_opts_hdr* opts = malloc(2 + length); // 2 bytes for next_hdr and hdr_ext_len
+	if (opts == NULL) return NULL;
+
+	opts->next_hdr = base.next_hdr;
+	opts->hdr_ext_len = base.hdr_ext_len;
+
+	rps_seek(rps, length);
+
+	struct ProtocolNode* ext_node = create_proto_node();
+	ext_node->type = PROTO_IPV6_EXT_DST_OPTS;
+	ext_node->hdr = opts;
+	return ext_node;
+}
+
 static struct ipv6_ext_hdr_chain parse_ipv6_ext_hdrs(
 	struct ProtocolNode* parent, 
 	struct raw_pack_stream* rps,
@@ -84,6 +121,9 @@ static struct ipv6_ext_hdr_chain parse_ipv6_ext_hdrs(
 
 		if (next == PROTO_IPV6_EXT_FRAG) {
 			ext_node = parse_ipv6_ext_frag_hdr(rps, ext_base);
+		}
+		else if (next == PROTO_IPV6_EXT_DST_OPTS) {
+
 		}
 		else {
 			rps_seek(rps, full_hdr_len - 2); // skip other headers for now
@@ -148,16 +188,4 @@ ProtocolNode_t* parse_ipv6_packet(struct raw_pack_stream* stream) {
 	}
 
 	return last_node;
-}
-
-inline uint8_t ipv6_version(const IPV6Header_t *h) {
-    return (ntohl(h->ver_tc_fl) >> 28) & 0xF;
-}
-
-inline uint8_t ipv6_traffic_class(const IPV6Header_t *h) {
-    return (ntohl(h->ver_tc_fl) >> 20) & 0xFF;
-}
-
-inline uint32_t ipv6_flow_label(const IPV6Header_t *h) {
-    return ntohl(h->ver_tc_fl) & 0xFFFFF;
 }

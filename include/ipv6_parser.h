@@ -93,11 +93,11 @@ typedef struct __attribute__((packed)) ipv6_ext_frag_hdr {
  *  - Contains one or more options, and optional padding fields to align options and 
  *  to make the total header length a multiple of 8 octets. Options are TLV-coded.
  */
-typedef struct __attribute__((packed)) IPV6ExtOptions {
+typedef struct __attribute__((packed)) ipv6_ext_opts_hdr {
     uint8_t 	next_hdr;
     uint8_t 	hdr_ext_len;
     uint8_t 	options[];
-} IPV6ExtOptions_t;
+} ipv6_ext_opts_hdr_t;
 
 /**
  * === Routing header (variable length) ===
@@ -116,23 +116,17 @@ typedef struct __attribute__((packed)) IPV6ExtOptions {
  * Type-specific Data: variable
  * - Data that belongs to this type of routing header.
  */
-typedef struct __attribute__((packed)) IPV6ExtRouting {
+typedef struct __attribute__((packed)) ipv6_ext_routing_hdr {
     uint8_t 	next_hdr;
     uint8_t 	hdr_ext_len;
     uint8_t 	routing_type;
     uint8_t 	segments_left;
     uint8_t 	data[];
-} IPV6ExtRouting_t;
+} ipv6_ext_routing_hdr_t;
 
 // sanity checks
 _Static_assert(sizeof(IPV6Header_t) == 40, "IPV6Header_t's length must be 40 bytes");
 
 HEX_P ProtocolNode_t* parse_ipv6_packet(struct raw_pack_stream*);
-
-HEX_P inline uint8_t ipv6_version(const IPV6Header_t*);
-
-HEX_P inline uint8_t ipv6_traffic_class(const IPV6Header_t*);
-
-HEX_P inline uint32_t ipv6_flow_label(const IPV6Header_t*);
 
 #endif

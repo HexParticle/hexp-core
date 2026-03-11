@@ -11,6 +11,8 @@
 
 #include <string.h>
 
+#define protocol_node ProtocolNode
+
 static inline uint8_t ipv6_version(const IPV6Header_t *h) {
     return (ntohl(h->ver_tc_fl) >> 28) & 0xF;
 }
@@ -35,14 +37,6 @@ static inline int is_ipv6_ext(uint8_t nh) {
         default:
             return 0;
     }
-}
-
-static size_t get_ext_total_len(uint8_t nh, uint8_t hdr_ext_len_byte) {
-    if (nh == IPV6_EXT_FRAGMENT) {
-        return 8; // frag header is always 8 bytes fixed
-    }
-    // standard RFC formula: (Length Field + 1) * 8
-    return (size_t) (hdr_ext_len_byte + 1) * 8;
 }
 
 static struct ipv6_ext_base parse_ipv6_ext_base(struct raw_pack_stream* rps) {
@@ -85,7 +79,7 @@ static struct ProtocolNode* parse_ipv6_ext_frag_hdr(
  * Parse IPV6 options extension header.
  * This function is unrefined.
  */
-static struct ipv6_ext_opts_hdr* parse_ipv6_ext_opts(
+static struct ipv6_ext_opts_hdr* parse_ipv6_ext_opts_hdr(
 	struct raw_pack_stream* rps, 
 	struct ipv6_ext_base base
 ) {
@@ -97,6 +91,7 @@ static struct ipv6_ext_opts_hdr* parse_ipv6_ext_opts(
 
 	opts->next_hdr = base.next_hdr;
 	opts->hdr_ext_len = base.hdr_ext_len;
+	memcpy(opts->options, raw, length);
 
 	rps_seek(rps, length);
 
@@ -109,38 +104,56 @@ static struct ipv6_ext_opts_hdr* parse_ipv6_ext_opts(
 static struct ipv6_ext_hdr_chain parse_ipv6_ext_hdrs(
 	struct ProtocolNode* parent, 
 	struct raw_pack_stream* rps,
-	uint8_t next
+	uint8_t next_proto
 ) {
 	size_t offset = IPV6_HEADER_LEN;
-	struct ProtocolNode* current = parent;
+	struct ProtocolNode* current_node = parent;
 
-	while (is_ipv6_ext(next)) {
+	while (is_ipv6_ext(next_proto)) {
 		struct ipv6_ext_base ext_base = parse_ipv6_ext_base(rps);
-		size_t full_hdr_len = get_ext_total_len(next, ext_base.hdr_ext_len);
-		struct ProtocolNode* ext_node = NULL;
+		struct protocol_node* ext_node = NULL;
 
-		if (next == PROTO_IPV6_EXT_FRAG) {
-			ext_node = parse_ipv6_ext_frag_hdr(rps, ext_base);
-		}
-		else if (next == PROTO_IPV6_EXT_DST_OPTS) {
+		size_t full_hdr_len = 0;
 
-		}
+		if (next_proto == IPV6_EXT_FRAGMENT) {
+        	full_hdr_len = 8; // frag header is always 8 bytes fixed
+    	}
 		else {
-			rps_seek(rps, full_hdr_len - 2); // skip other headers for now
+    		// standard RFC formula: (Length Field + 1) * 8
+    		full_hdr_len = (size_t) (ext_base.hdr_ext_len + 1) * 8;
+		}
+
+		switch (next_proto) {
+			case IPV6_EXT_FRAGMENT: {
+				ext_node = parse_ipv6_ext_frag_hdr(rps, ext_base);
+				break;
+			}
+
+			case IPV6_EXT_DEST_OPTS: {
+				ext_node = parse_ipv6_ext_opts_hdr(rps, ext_base);
+				break;
+			}
+
+			default: {
+				rps_seek(rps, full_hdr_len - 2);
+				ext_node = create_proto_node();
+				ext_node->type = PROTO_IPV6_EXT;
+				break;
+			}
 		}
 
 		if (ext_node) {
-			current->next = ext_node;
-			current = ext_node;
+			current_node->next = ext_node;
+			current_node = ext_node;
 		}
 
-		next = ext_base.next_hdr;
+		next_proto = ext_base.next_hdr;
 		offset += full_hdr_len;
 	}
 
 	struct ipv6_ext_hdr_chain chain = {
-		.last_node = current,
-		.next_proto = next,
+		.last_node = current_node,
+		.next_proto = next_proto,
 		.offset = offset
 	};
 
@@ -175,7 +188,7 @@ ProtocolNode_t* parse_ipv6_packet(struct raw_pack_stream* stream) {
 	uint8_t next = ip_hdr->next_hdr;
 
 	rps_seek(stream, IPV6_HEADER_LEN);
-	struct ipv6_ext_hdr_chain chain = parse_ipv6_ext_hdrs(ip_hdr, stream, next);
+	struct ipv6_ext_hdr_chain chain = parse_ipv6_ext_hdrs(ip_node, stream, next);
 
 	const uint8_t* next_lyr_stream = raw + chain.offset;
 	struct ProtocolNode* last_node = chain.last_node;

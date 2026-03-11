@@ -11,6 +11,11 @@
 #include "udp_parser.h"
 #include "arp_parser.h"
 #include "icmp.h"
+#include "netdsl/tokenizer.h"
+#include "netdsl/token.h"
+#include "netdsl/parser.h"
+#include "netdsl/bpf_gen.h"
+#include "sds/sds.h"
 
 #include <stdlib.h>
 
@@ -164,18 +169,51 @@ static void dump_node(ProtocolNode_t* node) {
 }
 
 #ifdef RUN_MAIN
-int main(int argc, char** argv) {
-	HexInstnace_t instance = create_hex_instance("en0");
+int main() {
+    const char *input = "from ip 192.8.9.0 to ip 192.123.123.123";
+	struct token* tokens = malloc(sizeof(struct token) * 100);
+    struct token tok;
 
-	while (1) {
-		ProtocolNode_t* result = read_next_packet(&instance);
-		if (result != NULL) {
-			dump_node(result);
-			free_packet(result);
+	int i = 0;
+    while ((tok = next_token(&input)).type != TOKEN_EOF) {
+		*(tokens + i) = tok;
+        i += 1;
+    }
+
+	struct parser_ctx ctx = {.tokens = tokens, .current = 0, .total = i};
+	struct stmt* s = parse_from_stmt(&ctx);
+
+	if (s) {
+		sds buffer = sdsempty();
+		int res = bpf_gen_stmt(s, &buffer);
+
+		if (res >= 0) {
+			fprintf(stdout, "%s\n", buffer);
 		}
+		
+		free_stmt(s);
+		sdsfree(buffer);
+	}
+	else {
+		fprintf(stderr, "Couldn't parse a statement");
 	}
 
-	free_hex_instance(&instance);
+	free(tokens);
+    return 0;
 }
+
+// int main(int argc, char** argv) {
+// 	HexInstnace_t instance = create_hex_instance("en0");
+
+// 	while (1) {
+// 		ProtocolNode_t* result = read_next_packet(&instance);
+// 		if (result != NULL) {
+// 			dump_node(result);
+// 			free_packet(result);
+// 		}
+// 	}
+
+// 	free_hex_instance(&instance);
+// }
 
 #endif

@@ -137,3 +137,34 @@ struct port_expr* parse_port_expr(struct parser_ctx* ctx) {
 	e->value = 3333;
 	return e;
 }
+
+void free_from_stmt(struct from_stmt* fs) {
+	if (!fs) return;
+
+	if (fs->from) free_expr(fs->from);
+	if (fs->to) free_expr(fs->to);
+
+	free(fs);
+}
+
+void free_stmt(struct stmt* s) {
+	if (!s) return;
+
+	if (s->type == STMT_FROM) {
+		struct from_stmt* fs = (struct from_stmt*) s->s;
+		free_from_stmt(fs);
+	}
+
+	free(s);
+}
+
+void free_expr(struct expr* e) {
+	if (!e) return;
+
+	if (e->type == EXPR_IP) {
+		struct ip_expr* ipe = (struct ip_expr*) e->e;
+		free(ipe);
+	}
+
+	free(e);
+}

@@ -191,7 +191,7 @@ int main() {
 			fprintf(stdout, "%s\n", buffer);
 		}
 		
-		free(s);
+		free_stmt(s);
 		sdsfree(buffer);
 	}
 	else {

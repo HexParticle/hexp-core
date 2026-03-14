@@ -10,6 +10,6 @@
 #include "proto_node.h"
 #include "raw_stream.h"
 
-HEX_P ProtocolNode_t* parse_dns_packet(const struct raw_pack_stream*);
+HEX_P struct proto_node* parse_dns_packet(struct raw_pack_stream*);
 
 #endif

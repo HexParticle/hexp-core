@@ -3,23 +3,24 @@
  * Copyright (c) 2023 Kagati Foundation
  */
 
-#ifndef UDP_PARSER_H
-#define UDP_PARSER_H
+#ifndef _HEXP_UDP_PARSER_H_
+#define _HEXP_UDP_PARSER_H_
 
 #include <stdint.h>
 
 #include "hex.h"
 #include "proto_node.h"
+#include "raw_stream.h"
 
 #define UDP_HEADER_LEN		8 // 8-bytes
 
-typedef struct UDPHeader {
+struct __attribute__((packed)) udp_header {
 	uint16_t	sport;	/* Source port */
 	uint16_t	dport;	/* Destination port */
 	uint16_t	length; /* Total length */
 	uint16_t	cksum;  /* Checksum */
-} UDPHeader_t;
+};
 
-HEX_P ProtocolNode_t* parse_udp_packet(const uint8_t* stream);
+HEX_P struct proto_node* parse_udp_packet(struct raw_pack_stream*);
 
 #endif

@@ -3,8 +3,8 @@
  * Copyright (c) 2023 Kagati Foundation
  */
 
-#ifndef RAW_PACK_STREAM_H
-#define RAW_PACK_STREAM_H
+#ifndef _HEXP_RAW_PACK_STREAM_H_
+#define _HEXP_RAW_PACK_STREAM_H_
 
 #include <stdint.h>
 #include <stdlib.h>

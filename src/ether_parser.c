@@ -13,22 +13,25 @@
 #include <stdio.h>
 #include <string.h>
 
-static int parse_vlan_tags(EtherHeader_t* const eth_header, const uint8_t* stream, size_t len);
+static int parse_vlan_tags(struct ether_header* const eth_header, struct raw_pack_stream*);
 
-ProtocolNode_t* parse_ether_packet(const uint8_t* stream, size_t len) {
-	EtherHeader_t* eth_header = malloc(sizeof(EtherHeader_t));
+struct proto_node* parse_ether_packet(struct raw_pack_stream* stream) {
+	const uint8_t* raw = stream->stream;
+	struct ether_header* eth_header = malloc(sizeof(struct ether_header));
 
 	if (eth_header == NULL) {
 		fprintf(stderr, "Failed to allocate memory for Ethernet header\n");
 		return NULL;
 	}
 
-    memcpy(eth_header->dst_mac, stream, MAC_ADDR_LEN);
-    memcpy(eth_header->src_mac, stream + 6, MAC_ADDR_LEN);
+    memcpy(eth_header->dst_mac, raw, MAC_ADDR_LEN);
+    memcpy(eth_header->src_mac, raw + 6, MAC_ADDR_LEN);
 
-    eth_header->len = len;
+    eth_header->len = stream->length;
+	eth_header->type = (raw[12] << 8) | raw[13];
 
-	int payload_off = parse_vlan_tags(eth_header, stream, len);
+	rps_seek(stream, sizeof(struct ether_header)); // skip ether header
+	int payload_off = parse_vlan_tags(eth_header, stream);
 
 	if (payload_off < 0) {
 		free(eth_header);
@@ -36,7 +39,7 @@ ProtocolNode_t* parse_ether_packet(const uint8_t* stream, size_t len) {
 		return NULL;
 	}
 
-	ProtocolNode_t* ether_node = create_proto_node();
+	struct proto_node* ether_node = create_proto_node();
 	ether_node->type = PROTO_ETH;
 	ether_node->hdr = eth_header;
     
@@ -49,24 +52,23 @@ ProtocolNode_t* parse_ether_packet(const uint8_t* stream, size_t len) {
     }
 
 	if (eth_header->type == ETHER_TYPE_IPV4) {
-		ether_node->next = parse_ipv4_packet((stream + payload_off));
+		ether_node->next = parse_ipv4_packet(stream);
 	}
 	else if (eth_header->type == ETHER_TYPE_ARP) {
-		ether_node->next = parse_arp_packet((stream + payload_off));
+		ether_node->next = parse_arp_packet(stream);
 	}
 	else if (eth_header->type == ETHER_TYPE_IPV6) {
-		struct raw_pack_stream raw_stream = rps_create(stream + payload_off, len);
-		ether_node->next = parse_ipv6_packet(&raw_stream);
+		ether_node->next = parse_ipv6_packet(stream);
 	}
 
 	return ether_node;
 }
 
-static int parse_vlan_tags(EtherHeader_t* eth_header, const uint8_t* stream, size_t len) {
+static int parse_vlan_tags(struct ether_header* const eth_header, struct raw_pack_stream* rps) {
 	int payload_off = ETHER_PAYLOAD_OFF;
+	const uint8_t* stream = rps_read_ptr(rps);
+	size_t len = rps->length;
 
-	// first parse the ether type
-	eth_header->type = (stream[12] << 8) | stream[13];
 	eth_header->vlan_count = 0;
 
 	while (eth_header->type == ETHER_TYPE_VLAN) {
@@ -80,7 +82,7 @@ static int parse_vlan_tags(EtherHeader_t* eth_header, const uint8_t* stream, siz
             return -1;
         }
 
-		VlanTag_t tag = {
+		struct vlan_tag tag = {
 			.tpid = ETHER_TYPE_VLAN,
 			.tci = (stream[payload_off] << 8) | (stream[payload_off + 1])
 		};
@@ -93,5 +95,7 @@ static int parse_vlan_tags(EtherHeader_t* eth_header, const uint8_t* stream, siz
         payload_off += 4;
 		eth_header->vlan_count += 1;
     }
+
+	rps_seek(rps, eth_header->vlan_count * 4); // skip each vlan tag
 	return payload_off;
 }

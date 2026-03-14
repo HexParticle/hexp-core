@@ -25,15 +25,15 @@ static void mac_to_string(const uint8_t mac[MAC_ADDR_LEN], char *out) {
             mac[3], mac[4], mac[5]);
 }
 
-static void dump_vlan_tags(const VlanTag_t* tags, int count) {
+static void dump_vlan_tags(const struct vlan_tag* tags, int count) {
 	for (int i = 0; i < count; i++) {
-		const VlanTag_t tag = tags[i];
+		const struct vlan_tag tag = tags[i];
 		printf("   TPID: %d\n", tag.tpid);
 		printf("   TCI: %d\n", tag.tci);
 	}
 }
 
-static void dump_ether_header(const EtherHeader_t* header) {
+static void dump_ether_header(const struct ether_header* header) {
     if (header == NULL) {
         printf("ETHER NULL\n");
         return;
@@ -52,7 +52,7 @@ static void dump_ether_header(const EtherHeader_t* header) {
 	}
 }
 
-static void dump_ipv6_header(const IPV6Header_t* header) {
+static void dump_ipv6_header(const struct ipv6_header* header) {
 	if (header == NULL) {
         printf("IPv6 NULL\n");
         return;
@@ -70,7 +70,7 @@ static void dump_ipv6_header(const IPV6Header_t* header) {
 	);
 }
 
-static void dump_ipv4_header(const IPV4Header_t* header) {
+static void dump_ipv4_header(const struct ipv4_header* header) {
 	if (header == NULL) {
         printf("IPv4 NULL\n");
         return;
@@ -88,7 +88,7 @@ static void dump_ipv4_header(const IPV4Header_t* header) {
 	);
 }
 
-static void dump_arp_header(const ARPHeader_t* header) {
+static void dump_arp_header(const struct arp_header* header) {
 	if (header == NULL) {
         printf("ARP NULL\n");
         return;
@@ -120,7 +120,7 @@ static void dump_arp_header(const ARPHeader_t* header) {
 	}
 }
 
-static void dump_tcp_header(const TCPHeader_t* header) {
+static void dump_tcp_header(const struct tcp_header* header) {
 	if (header == NULL) {
 		printf("TCP NULL\n");
 		return;
@@ -129,7 +129,7 @@ static void dump_tcp_header(const TCPHeader_t* header) {
 	printf("    TCP(FROM %d TO %d)", header->sport, header->dport);
 }
 
-static void dump_udp_header(const UDPHeader_t* header) {
+static void dump_udp_header(const struct udp_header* header) {
 	if (header == NULL) {
 		printf("UDP NULL");
 		return;
@@ -138,28 +138,28 @@ static void dump_udp_header(const UDPHeader_t* header) {
 	printf("    UDP(FROM %d TO %d)", header->sport, header->dport);
 }
 
-static void dump_node(ProtocolNode_t* node) {
-	ProtocolNode_t* current_node = node;
+static void dump_node(struct proto_node* node) {
+	struct proto_node* current_node = node;
 	
 	while (current_node != NULL) {
 		if (current_node->type == PROTO_ETH) {
-			EtherHeader_t* eth_hdr = (EtherHeader_t*) current_node->hdr;
+			struct ether_header* eth_hdr = (struct ether_header*) current_node->hdr;
 			dump_ether_header(eth_hdr);
 		}
 		else if (current_node->type == PROTO_IPV4) {
-			IPV4Header_t* ip_hdr = (IPV4Header_t*) current_node->hdr;
+			struct ipv4_header* ip_hdr = (struct ipv4_header*) current_node->hdr;
 			dump_ipv4_header(ip_hdr);
 		}
 		else if (current_node->type == PROTO_TCP) {
-			TCPHeader_t* tcp_hdr = (TCPHeader_t*) current_node->hdr;
+			struct tcp_header* tcp_hdr = (struct tcp_header*) current_node->hdr;
 			dump_tcp_header(tcp_hdr);
 		}
 		else if (current_node->type == PROTO_UDP) {
-			UDPHeader_t* udp_hdr = (UDPHeader_t*) current_node->hdr;
+			struct udp_header* udp_hdr = (struct udp_header*) current_node->hdr;
 			dump_udp_header(udp_hdr);
 		}
 		else if (current_node->type == PROTO_IPV6) {
-			IPV6Header_t* ipv6 = (IPV6Header_t*) current_node->hdr;
+			struct ipv6_header* ipv6 = (struct ipv6_header*) current_node->hdr;
 			dump_ipv6_header(ipv6);
 		}
 

@@ -7,10 +7,11 @@
 
 #include <string.h>
 
-ProtocolNode_t* parse_arp_packet(const uint8_t* stream) {
-	const size_t arp_header_size = sizeof(ARPHeader_t);
+struct proto_node* parse_arp_packet(struct raw_pack_stream* rps) {
+	const uint8_t* stream = rps_read_ptr(rps);
+	const size_t arp_header_size = ARP_HDR_SIZE;
 
-	ARPHeader_t* arp_hdr = malloc(arp_header_size);
+	struct arp_header* arp_hdr = malloc(arp_header_size);
 	arp_hdr->htype = (stream[0] << 8) | stream[1];
     arp_hdr->ptype = (stream[2] << 8) | stream[3];
     arp_hdr->op    = (stream[6] << 8) | stream[7];
@@ -20,10 +21,11 @@ ProtocolNode_t* parse_arp_packet(const uint8_t* stream) {
     memcpy(arp_hdr->tha, stream + 18, 6);  // Target MAC
     memcpy(arp_hdr->tpa, stream + 24, 4);  // Target IP
 
-	ProtocolNode_t* arp_node = create_proto_node();
+	struct proto_node* arp_node = create_proto_node();
 	arp_node->type = PROTO_ARP;
 	arp_node->hdr = arp_hdr;
 	arp_node->hdr_len = arp_header_size;
 
+	rps_seek(rps, arp_header_size);
 	return arp_node;
 }

@@ -12,8 +12,9 @@
 
 #include <string.h>
 
-ProtocolNode_t* parse_ipv4_packet(const uint8_t* stream) {
-	IPV4Header_t* ip_header = malloc(sizeof(IPV4Header_t));
+struct proto_node* parse_ipv4_packet(struct raw_pack_stream* rps) {
+	const uint8_t* stream = rps_read_ptr(rps);
+	struct ipv4_header* ip_header = malloc(sizeof(struct ipv4_header));
 
 	ip_header->ver_ihl = 	stream[0];
 	ip_header->dscp_ecn = 	stream[1];
@@ -31,11 +32,13 @@ ProtocolNode_t* parse_ipv4_packet(const uint8_t* stream) {
 	memcpy(ip_header->src, stream + 12, 4);
 	memcpy(ip_header->dst, stream + 16, 4);
 
-	uint8_t ihl = ip_header->ver_ihl & 0x0F;
+	one_byte ihl = ip_header->ver_ihl & 0x0F;
 	
-	ProtocolNode_t* ip_node = create_proto_node();
+	struct proto_node* ip_node = create_proto_node();
 	ip_node->type = PROTO_IPV4;
 	ip_node->hdr = ip_header;
+
+	rps_seek(rps, sizeof(struct ipv4_header)); // skip ipv4 header
 
 	const uint8_t* l4_payload_start = stream + (ihl * 4);
 
@@ -46,11 +49,7 @@ ProtocolNode_t* parse_ipv4_packet(const uint8_t* stream) {
 		ip_node->next = parse_udp_packet(l4_payload_start);
 	}
 	else if (ip_header->proto == IPPROTO_ICMP) {
-		const struct raw_pack_stream stream = {
-			.stream = l4_payload_start,
-			.length = 0x0
-		};
-		ip_node->next = parse_icmp_packet(&stream);
+		ip_node->next = parse_icmp_packet(rps);
 	}
 	return ip_node;
 }

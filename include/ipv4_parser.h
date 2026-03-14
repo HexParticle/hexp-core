@@ -12,13 +12,14 @@
 #include <stdio.h>
 
 #include "proto_node.h"
+#include "raw_stream.h"
 #include "hex.h"
 #include "ip.h"
 
 /**
  * IPv4 header
  */
-typedef struct __attribute__((packed)) IPV4Header {
+struct __attribute__((packed)) ipv4_header {
     uint8_t     ver_ihl;			/* Version and Internet Header Length */
     uint8_t     dscp_ecn;
     uint16_t    len;
@@ -29,10 +30,10 @@ typedef struct __attribute__((packed)) IPV4Header {
     uint16_t    chk;
     uint8_t     src[IPV4_ADDR_LEN]; /* Source IPv4 address */
     uint8_t     dst[IPV4_ADDR_LEN]; /* Destination IPv4 address */
-} IPV4Header_t;
+};
 
 // sanity checks
-_Static_assert(sizeof(IPV4Header_t) == 20, "IPV4Header_t's length must be 20 bytes");
+_Static_assert(sizeof(struct ipv4_header) == 20, "IPV4Header_t's length must be 20 bytes");
 
 #define IPV4_PROTOCOL_NAME_IPV4_ICMP        "ICMP(Internet Control Message Protocol)"
 #define IPV4_PROTOCOL_NAME_IPV4_IGMP        "ICMP(Internet Group Management Protocol)"
@@ -67,8 +68,8 @@ _Static_assert(sizeof(IPV4Header_t) == 20, "IPV4Header_t's length must be 20 byt
 
 /// Parse an IPv4 packet from a raw byte stream
 /// @param stream Pointer to the raw packet bytes
-/// @return ProtocolNode representing the parsed IPv4 packet
-HEX_P ProtocolNode_t* parse_ipv4_packet(const uint8_t* stream);
+/// @return proto_node representing the parsed IPv4 packet
+HEX_P struct proto_node* parse_ipv4_packet(struct raw_pack_stream*);
 
 HEX_P char* ipv4_proto_name(uint16_t proto);
 

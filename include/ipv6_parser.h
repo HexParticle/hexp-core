@@ -32,22 +32,22 @@ typedef struct __attribute__((packed)) ipv6_ext_base {
 } ipv6_ext_base_t;
 
 typedef struct ipv6_ext_hdr_chain {
-	ProtocolNode_t* last_node; /* The last header in the extension chain */
-	uint8_t			next_proto;
-	size_t			offset;
+	struct proto_node* 	last_node; /* The last header in the extension chain */
+	uint8_t				next_proto;
+	size_t				offset;
 } ipv6_ext_hdr_chain_t;
 
 /**
  * IPv6 header structure.
  */
-typedef struct __attribute__((packed)) IPV6Header {
+struct __attribute__((packed)) ipv6_header {
 	uint32_t 	ver_tc_fl; 				/* Version(4 bits), Traffic Class(6+2 bits), and Flow Label(20 bits) */
 	uint16_t 	len;       				/* Payload length */
 	uint8_t 	next_hdr;  				/* This field usually specifies the transport layer protocol used by a packet's payload. */
 	uint8_t 	hop_limit; 				/* Replaces the time to live field in IPv4 */
 	uint8_t 	src[IPV6_ADDR_LEN];   	/* Source address */
 	uint8_t 	dst[IPV6_ADDR_LEN];   	/* Destination address */
-} IPV6Header_t;
+};
 
 // IPv6 extension headers
 
@@ -125,8 +125,8 @@ typedef struct __attribute__((packed)) ipv6_ext_routing_hdr {
 } ipv6_ext_routing_hdr_t;
 
 // sanity checks
-_Static_assert(sizeof(IPV6Header_t) == 40, "IPV6Header_t's length must be 40 bytes");
+_Static_assert(sizeof(struct ipv6_header) == 40, "IPV6Header_t's length must be 40 bytes");
 
-HEX_P ProtocolNode_t* parse_ipv6_packet(struct raw_pack_stream*);
+HEX_P struct proto_node* parse_ipv6_packet(struct raw_pack_stream*);
 
 #endif

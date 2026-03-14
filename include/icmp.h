@@ -30,7 +30,7 @@
 /**
  * ICMP header version 4.
  */
-typedef struct __attribute__((packed)) ICMPHeader {
+struct __attribute__((packed)) icmp_header {
 	uint8_t		type;
 	uint8_t		code;
 	uint16_t	cksum;
@@ -49,15 +49,15 @@ typedef struct __attribute__((packed)) ICMPHeader {
 
         uint32_t raw;
     } rest;
-} ICMPHeader_t;
+};
 
 /**
  * ICMP header version 6.
  */
-typedef struct __attribute__((packed)) ICMPv6Header {
+struct __attribute__((packed)) icmp6_header {
 	uint8_t		type;
 	uint8_t		code;
 	uint16_t	cksum;
-} ICMPv6Header_t;
+};
 
 #endif

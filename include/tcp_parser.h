@@ -12,11 +12,12 @@
 
 #include "hex.h"
 #include "proto_node.h"
+#include "raw_stream.h"
 
 /**
  * TCP header
  */
-typedef struct __attribute__((packed)) TCPHeader {
+struct __attribute__((packed)) tcp_header {
     uint16_t    sport;
     uint16_t    dport;
     uint32_t    seq;
@@ -27,8 +28,10 @@ typedef struct __attribute__((packed)) TCPHeader {
     uint16_t    chk;
     uint16_t    urg;
     uint8_t     options[];
-} TCPHeader_t;
+};
 
-HEX_P ProtocolNode_t* parse_tcp_packet(const uint8_t* stream);
+HEX_P struct proto_node* parse_tcp_packet(struct raw_pack_stream*);
+
+#define TCP_HDR_SIZE sizeof(struct tcp_header)
 
 #endif

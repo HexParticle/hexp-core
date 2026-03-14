@@ -8,6 +8,7 @@
 
 #include "hex.h"
 #include "proto_node.h"
+#include "raw_stream.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -17,8 +18,10 @@
 #define ARP_REQUEST		1 /* ARP request */
 #define ARP_REPLY		2 /* ARP reply */
 
+#define ARP_HDR_SIZE sizeof(struct arp_header)
+
 /// ARP packet header structure
-typedef struct __attribute__((__packed__)) ARPHeader {
+struct __attribute__((__packed__)) arp_header {
     uint16_t    htype;  // Hardware type (for e.g.: 1 for Ethernet)
     uint16_t    ptype;  // Protocol type (for: e.g.: 0x0800 for IPv4)
     uint8_t     hlen;   // Hardware address length (bytes) — 6 for MAC
@@ -28,11 +31,11 @@ typedef struct __attribute__((__packed__)) ARPHeader {
     uint8_t     spa[4]; // Sender protocol address (IPv4)
     uint8_t     tha[6]; // Target hardware address (MAC)
     uint8_t     tpa[4]; // Target protocol address (IPv4)
-} ARPHeader_t;
+};
 
 /// Parse an ARP packet from a raw byte stream
 /// @param stream Pointer to the raw packet bytes
-/// @return ProtocolNode representing the parsed ARP packet
-HEX_P ProtocolNode_t* parse_arp_packet(const uint8_t* stream);
+/// @return proto_node representing the parsed ARP packet
+HEX_P struct proto_node* parse_arp_packet(struct raw_pack_stream*);
 
 #endif

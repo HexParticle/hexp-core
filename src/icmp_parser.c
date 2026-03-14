@@ -4,12 +4,13 @@
  */
 
 #include "icmp_parser.h"
+
 #include <stdlib.h>
 
-ProtocolNode_t* parse_icmp_packet(const struct raw_pack_stream* stream) {
-	const uint8_t* raw = stream->stream;
+struct proto_node* parse_icmp_packet(struct raw_pack_stream* stream) {
+	const uint8_t* raw = rps_read_ptr(stream);
 
-	ICMPHeader_t* icmp_hdr = malloc(sizeof(ICMPHeader_t));
+	struct icmp_header* icmp_hdr = malloc(sizeof(struct icmp_header));
 	icmp_hdr->type 		= raw[0];
 	icmp_hdr->code 		= raw[1];
 	icmp_hdr->cksum 	= ((uint16_t) raw[2] << 8) | (uint8_t) raw[3];
@@ -19,9 +20,10 @@ ProtocolNode_t* parse_icmp_packet(const struct raw_pack_stream* stream) {
 		((uint32_t) raw[6] << 8) | 
 		((uint32_t) raw[7]);
 
-	ProtocolNode_t* icmp_node = create_proto_node();
+	struct proto_node* icmp_node = create_proto_node();
 	icmp_node->type = PROTO_ICMP;
 	icmp_node->hdr  = icmp_hdr;
 
+	rps_seek(stream, sizeof(struct icmp_header));
 	return icmp_node;
 }

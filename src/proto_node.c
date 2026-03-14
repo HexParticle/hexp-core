@@ -8,15 +8,15 @@
 
 #include "proto_node.h"
 
-ProtocolNode_t* create_proto_node(void) {
-	ProtocolNode_t* node = malloc(sizeof(ProtocolNode_t));
+struct proto_node* create_proto_node(void) {
+	struct proto_node* node = malloc(sizeof(struct proto_node));
 	if (node) {
 		node->hdr 	= NULL;
 		node->next 	= NULL;
 		node->type 	= -1;
 	}
 	else {
-		fprintf(stderr, "malloc failed");
+		fprintf(stderr, "malloc failed when creating a protocol node");
 		exit(EXIT_FAILURE);
 	}
 	return node;

@@ -39,12 +39,12 @@ HEX_P void free_hex_instance(HexInstnace_t* handle);
 /**
  * @brief Captures the next packet and parses it into a protocol chain.
  * @param handle Pointer to the active sniffer instance.
- * @return ProtocolNode_t* The head of the parsed linked list.
+ * @return proto_node* The head of the parsed linked list.
  * @warning Returns heap-allocated memory. Caller must use free_protocol_node() 
  * to prevent memory leaks.
  */
-HEX_P ProtocolNode_t* read_next_packet(const HexInstnace_t* handle);
+HEX_P struct proto_node* read_next_packet(const HexInstnace_t* handle);
 
-HEX_P void free_packet(ProtocolNode_t* node);
+HEX_P void free_packet(struct proto_node* node);
 
 #endif

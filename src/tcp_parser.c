@@ -7,13 +7,15 @@
 
 #include <string.h>
 
-ProtocolNode_t* parse_tcp_packet(const uint8_t* stream) {
-    TCPHeader_t* tcp_header = malloc(sizeof(TCPHeader_t));
-	memcpy(tcp_header, stream, sizeof(TCPHeader_t));
+struct proto_node* parse_tcp_packet(struct raw_pack_stream* rps) {
+	const uint8_t* stream = rps_read_ptr(rps);
+    struct tcp_header* tcp_header = malloc(TCP_HDR_SIZE);
+	memcpy(tcp_header, stream, TCP_HDR_SIZE);
 
-	ProtocolNode_t* tcp_node = create_proto_node();
+	struct proto_node* tcp_node = create_proto_node();
 	tcp_node->type = PROTO_TCP;
 	tcp_node->hdr = tcp_header;
 
+	rps_seek(rps, TCP_HDR_SIZE);
     return tcp_node;
 }

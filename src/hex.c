@@ -6,6 +6,7 @@
 #include "hex.h"
 #include "ipv4_parser.h"
 #include "ether_parser.h"
+#include "raw_stream.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -28,26 +29,26 @@ void free_hex_instance(HexInstnace_t* handle) {
 	handle->handle = NULL;
 }
 
-ProtocolNode_t* read_next_packet(const HexInstnace_t* instance) {
+struct proto_node* read_next_packet(const HexInstnace_t* instance) {
 	struct pcap_pkthdr *header;
 	const char* stream;
 	int res = pcap_next_ex(instance->handle, &header, &stream);
 
-	// PacketStream_t stream = { .stream = stream, .length = header->caplen };
+	struct raw_pack_stream raw_stream = { .stream = stream, .length = header->caplen };
 	
 	if (res == 1) {
-		ProtocolNode_t* node = parse_ether_packet(stream, header->caplen);
+		struct proto_node* node = parse_ether_packet(&raw_stream);
 		return node;
 	}
 
 	return NULL;
 }
 
-void free_packet(ProtocolNode_t* head) {
-	ProtocolNode_t* current = head;
+void free_packet(struct proto_node* head) {
+	struct proto_node* current = head;
 
     while (current != NULL) {
-        ProtocolNode_t* next_node = current->next;
+        struct proto_node* next_node = current->next;
         if (current->hdr != NULL) { 
 			free(current->hdr);
 		}

@@ -11,17 +11,15 @@
 
 #include <string.h>
 
-#define protocol_node ProtocolNode
-
-static inline uint8_t ipv6_version(const IPV6Header_t *h) {
+static inline uint8_t ipv6_version(const struct ipv6_header *h) {
     return (ntohl(h->ver_tc_fl) >> 28) & 0xF;
 }
 
-static inline uint8_t ipv6_traffic_class(const IPV6Header_t *h) {
+static inline uint8_t ipv6_traffic_class(const struct ipv6_header *h) {
     return (ntohl(h->ver_tc_fl) >> 20) & 0xFF;
 }
 
-static inline uint32_t ipv6_flow_label(const IPV6Header_t *h) {
+static inline uint32_t ipv6_flow_label(const struct ipv6_header *h) {
     return ntohl(h->ver_tc_fl) & 0xFFFFF;
 }
 
@@ -46,7 +44,7 @@ static struct ipv6_ext_base parse_ipv6_ext_base(struct raw_pack_stream* rps) {
 	return base;
 }
 
-static struct ProtocolNode* parse_ipv6_ext_frag_hdr(
+static struct proto_node* parse_ipv6_ext_frag_hdr(
 	struct raw_pack_stream *rps, 
 	struct ipv6_ext_base base
 ) {
@@ -69,7 +67,7 @@ static struct ProtocolNode* parse_ipv6_ext_frag_hdr(
 					  // but since base extension header consumes 2 bytes,
 					  // we only seek 6 bytes
 
-	struct ProtocolNode* ext_node = create_proto_node();
+	struct proto_node* ext_node = create_proto_node();
 	ext_node->type = PROTO_IPV6_EXT_FRAG;
 	ext_node->hdr = frag;
 	return ext_node;
@@ -79,7 +77,7 @@ static struct ProtocolNode* parse_ipv6_ext_frag_hdr(
  * Parse IPV6 options extension header.
  * This function is unrefined.
  */
-static struct ipv6_ext_opts_hdr* parse_ipv6_ext_opts_hdr(
+static struct proto_node* parse_ipv6_ext_opts_hdr(
 	struct raw_pack_stream* rps, 
 	struct ipv6_ext_base base
 ) {
@@ -95,23 +93,23 @@ static struct ipv6_ext_opts_hdr* parse_ipv6_ext_opts_hdr(
 
 	rps_seek(rps, length);
 
-	struct ProtocolNode* ext_node = create_proto_node();
+	struct proto_node* ext_node = create_proto_node();
 	ext_node->type = PROTO_IPV6_EXT_DST_OPTS;
 	ext_node->hdr = opts;
 	return ext_node;
 }
 
 static struct ipv6_ext_hdr_chain parse_ipv6_ext_hdrs(
-	struct ProtocolNode* parent, 
+	struct proto_node* parent, 
 	struct raw_pack_stream* rps,
 	uint8_t next_proto
 ) {
 	size_t offset = IPV6_HEADER_LEN;
-	struct ProtocolNode* current_node = parent;
+	struct proto_node* current_node = parent;
 
 	while (is_ipv6_ext(next_proto)) {
 		struct ipv6_ext_base ext_base = parse_ipv6_ext_base(rps);
-		struct protocol_node* ext_node = NULL;
+		struct proto_node* ext_node = NULL;
 
 		size_t full_hdr_len = 0;
 
@@ -160,8 +158,8 @@ static struct ipv6_ext_hdr_chain parse_ipv6_ext_hdrs(
 	return chain;
 }
 
-ProtocolNode_t* parse_ipv6_packet(struct raw_pack_stream* stream) {
-	struct IPV6Header* ip_hdr = malloc(IPV6_HEADER_LEN);
+struct proto_node* parse_ipv6_packet(struct raw_pack_stream* stream) {
+	struct ipv6_header* ip_hdr = malloc(IPV6_HEADER_LEN);
 
 	const uint8_t* raw = rps_read_ptr(stream);
 
@@ -181,7 +179,7 @@ ProtocolNode_t* parse_ipv6_packet(struct raw_pack_stream* stream) {
 	memcpy(ip_hdr->src, raw + 8, IPV6_ADDR_LEN);
 	memcpy(ip_hdr->dst, raw + 24, IPV6_ADDR_LEN);
 	
-	struct ProtocolNode* ip_node = create_proto_node();
+	struct proto_node* ip_node = create_proto_node();
 	ip_node->type = PROTO_IPV6;
 	ip_node->hdr = ip_hdr;
 
@@ -191,7 +189,7 @@ ProtocolNode_t* parse_ipv6_packet(struct raw_pack_stream* stream) {
 	struct ipv6_ext_hdr_chain chain = parse_ipv6_ext_hdrs(ip_node, stream, next);
 
 	const uint8_t* next_lyr_stream = raw + chain.offset;
-	struct ProtocolNode* last_node = chain.last_node;
+	struct proto_node* last_node = chain.last_node;
 
 	if (next == IPPROTO_TCP) {
 		last_node->next = parse_tcp_packet(next_lyr_stream);

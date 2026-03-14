@@ -3,14 +3,15 @@
  * Copyright (c) 2023 Kagati Foundation
  */
 
-#ifndef ETHER_PARSER_H
-#define ETHER_PARSER_H
+#ifndef _HEXP_ETHER_PARSER_H_
+#define _HEXP_ETHER_PARSER_H_
 
 #include <stdint.h>
 #include <stdlib.h>
 
 #include "hex.h"
 #include "proto_node.h"
+#include "raw_stream.h"
 
 // Ether types
 #define ETHER_TYPE_IPV4 		0x0800 /* EtherType IPv4 */
@@ -30,28 +31,28 @@
 /**
  * 802.1Q
  */
-typedef struct __attribute__((packed)) VlanTag {
+struct __attribute__((packed)) vlan_tag {
 	uint16_t tpid; /* Tag protocol identifier */
 	uint16_t tci;  /* Tag control information */
-} VlanTag_t;
+};
 
 /// Ethernet header structure
-typedef struct __attribute__((packed)) EtherHeader {
+struct __attribute__((packed)) ether_header {
     uint8_t  	src_mac[MAC_ADDR_LEN]; /* Source MAC address*/
     uint8_t  	dst_mac[MAC_ADDR_LEN]; /* Destination MAC address */
     uint16_t 	type;				   /* EtherType */
     uint32_t 	len;				   /* Total length */
 
 	// VLAN support
-	int			vlan_count;
-	VlanTag_t	vlans[MAX_VLAN_STACK];
-} EtherHeader_t;
+	int				vlan_count;
+	struct vlan_tag	vlans[MAX_VLAN_STACK];
+};
 
 /**
  * Parse an Ethernet packet from a raw byte stream
  * @param stream Pointer to the raw packet bytes
- * @return ProtocolNode representing the parsed Ethernet packet
+ * @return proto_node representing the parsed Ethernet packet
 */
-HEX_P ProtocolNode_t* parse_ether_packet(const uint8_t* stream, size_t len);
+HEX_P struct proto_node* parse_ether_packet(struct raw_pack_stream* rps);
 
 #endif

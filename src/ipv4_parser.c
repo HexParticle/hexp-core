@@ -38,15 +38,13 @@ struct proto_node* parse_ipv4_packet(struct raw_pack_stream* rps) {
 	ip_node->type = PROTO_IPV4;
 	ip_node->hdr = ip_header;
 
-	rps_seek(rps, sizeof(struct ipv4_header)); // skip ipv4 header
-
-	const uint8_t* l4_payload_start = stream + (ihl * 4);
+	rps_seek(rps, ihl * 4); // skip ipv4 header
 
 	if (ip_header->proto == IPPROTO_TCP) {
-		ip_node->next = parse_tcp_packet(l4_payload_start);
+		ip_node->next = parse_tcp_packet(rps);
 	}
 	else if (ip_header->proto == IPPROTO_UDP) {
-		ip_node->next = parse_udp_packet(l4_payload_start);
+		ip_node->next = parse_udp_packet(rps);
 	}
 	else if (ip_header->proto == IPPROTO_ICMP) {
 		ip_node->next = parse_icmp_packet(rps);

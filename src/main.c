@@ -169,6 +169,7 @@ static void dump_node(struct proto_node* node) {
 }
 
 #ifdef RUN_MAIN
+/*
 int main() {
     const char *input = "from ip 192.8.9.0 to ip 192.123.123.123";
 	struct token* tokens = malloc(sizeof(struct token) * 100);
@@ -201,19 +202,20 @@ int main() {
 	free(tokens);
     return 0;
 }
+	*/
 
-// int main(int argc, char** argv) {
-// 	HexInstnace_t instance = create_hex_instance("en0");
+int main(int argc, char** argv) {
+	HexInstnace_t instance = create_hex_instance("en0");
 
-// 	while (1) {
-// 		ProtocolNode_t* result = read_next_packet(&instance);
-// 		if (result != NULL) {
-// 			dump_node(result);
-// 			free_packet(result);
-// 		}
-// 	}
+	while (1) {
+		struct proto_node* result = read_next_packet(&instance);
+		if (result != NULL) {
+			dump_node(result);
+			free_packet(result);
+		}
+	}
 
-// 	free_hex_instance(&instance);
-// }
+	free_hex_instance(&instance);
+}
 
 #endif

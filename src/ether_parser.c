@@ -13,11 +13,12 @@
 #include <stdio.h>
 #include <string.h>
 
-static int parse_vlan_tags(struct ether_header* const eth_header, struct raw_pack_stream*);
+static int parse_vlan_tags(struct ether_header* eth_header, struct raw_pack_stream*);
 
 struct proto_node* parse_ether_packet(struct raw_pack_stream* stream) {
 	const uint8_t* raw = stream->stream;
-	struct ether_header* eth_header = malloc(sizeof(struct ether_header));
+	size_t eth_hdr_size = ETH_HDR_SIZE;
+	struct ether_header* eth_header = malloc(eth_hdr_size);
 
 	if (eth_header == NULL) {
 		fprintf(stderr, "Failed to allocate memory for Ethernet header\n");
@@ -26,11 +27,9 @@ struct proto_node* parse_ether_packet(struct raw_pack_stream* stream) {
 
     memcpy(eth_header->dst_mac, raw, MAC_ADDR_LEN);
     memcpy(eth_header->src_mac, raw + 6, MAC_ADDR_LEN);
-
-    eth_header->len = stream->length;
 	eth_header->type = (raw[12] << 8) | raw[13];
 
-	rps_seek(stream, sizeof(struct ether_header)); // skip ether header
+	rps_seek(stream, eth_hdr_size); // skip ether header
 	int payload_off = parse_vlan_tags(eth_header, stream);
 
 	if (payload_off < 0) {
@@ -64,7 +63,7 @@ struct proto_node* parse_ether_packet(struct raw_pack_stream* stream) {
 	return ether_node;
 }
 
-static int parse_vlan_tags(struct ether_header* const eth_header, struct raw_pack_stream* rps) {
+static int parse_vlan_tags(struct ether_header* eth_header, struct raw_pack_stream* rps) {
 	int payload_off = ETHER_PAYLOAD_OFF;
 	const uint8_t* stream = rps_read_ptr(rps);
 	size_t len = rps->length;
@@ -96,6 +95,9 @@ static int parse_vlan_tags(struct ether_header* const eth_header, struct raw_pac
 		eth_header->vlan_count += 1;
     }
 
-	rps_seek(rps, eth_header->vlan_count * 4); // skip each vlan tag
+	if (eth_header->vlan_count > 0) {
+		rps_seek(rps, eth_header->vlan_count * 4); // skip each vlan tag
+	}
+
 	return payload_off;
 }

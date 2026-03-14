@@ -183,19 +183,17 @@ struct proto_node* parse_ipv6_packet(struct raw_pack_stream* stream) {
 	ip_node->type = PROTO_IPV6;
 	ip_node->hdr = ip_hdr;
 
-	uint8_t next = ip_hdr->next_hdr;
-
+	printf("IPv6 seek here: %zu, total length: %zu\n", IPV6_HEADER_LEN, stream->length);
 	rps_seek(stream, IPV6_HEADER_LEN);
-	struct ipv6_ext_hdr_chain chain = parse_ipv6_ext_hdrs(ip_node, stream, next);
 
-	const uint8_t* next_lyr_stream = raw + chain.offset;
+	struct ipv6_ext_hdr_chain chain = parse_ipv6_ext_hdrs(ip_node, stream, ip_hdr->next_hdr);
 	struct proto_node* last_node = chain.last_node;
 
-	if (next == IPPROTO_TCP) {
-		last_node->next = parse_tcp_packet(next_lyr_stream);
+	if (chain.next_proto == IPPROTO_TCP) {
+		last_node->next = parse_tcp_packet(stream);
 	}
-	else if (next == IPPROTO_UDP) {
-		last_node->next = parse_udp_packet(next_lyr_stream);
+	else if (chain.next_proto == IPPROTO_UDP) {
+		last_node->next = parse_udp_packet(stream);
 	}
 
 	return last_node;

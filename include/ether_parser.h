@@ -28,6 +28,8 @@
 
 #define MAX_VLAN_STACK 		0x4
 
+#define ETH_HDR_SIZE 	ETHER_PAYLOAD_OFF
+
 /**
  * 802.1Q
  */
@@ -41,9 +43,9 @@ struct __attribute__((packed)) ether_header {
     uint8_t  	src_mac[MAC_ADDR_LEN]; /* Source MAC address*/
     uint8_t  	dst_mac[MAC_ADDR_LEN]; /* Destination MAC address */
     uint16_t 	type;				   /* EtherType */
-    uint32_t 	len;				   /* Total length */
 
-	// VLAN support
+	// VLAN support; beware when calculating ethernet header's size using
+	// sizeof(struct ether_header). Always use ETH_HDR_SIZE.
 	int				vlan_count;
 	struct vlan_tag	vlans[MAX_VLAN_STACK];
 };

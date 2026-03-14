@@ -20,12 +20,14 @@ struct raw_pack_stream rps_create(const uint8_t* data, size_t length) {
 void rps_seek(struct raw_pack_stream* rps, size_t n) {
 	if (rps == NULL || rps->stream == NULL) return;
 
-	if (n > (rps->length - rps->read_off)) {
+	if ((rps->read_off + n) > rps->length) {
 		fprintf(
 			stderr, 
-			"Error: Seek %zu bytes exceeds remaining length %zu\n", 
+			"Error: Seek %zu bytes exceeds the length %zu by %zu. Current read offset %zu\n", 
 			n, 
-			(rps->length - rps->read_off)
+			rps->length,
+			(rps->read_off + n) - rps->length,
+			rps->read_off
 		);
 		exit(EXIT_FAILURE);
 	}

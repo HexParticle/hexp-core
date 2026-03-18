@@ -12,6 +12,19 @@
 
 #include <string.h>
 
+struct proto_node* parse_raw_proto_node(struct raw_pack_stream* rps) {
+	const uint8_t* raw = rps_read_ptr(rps);
+
+	size_t remain_len = rps->length - rps->read_off; // remaining length
+	const uint8_t* remain_raw = malloc(remain_len); // remaining bytes
+	memcpy(remain_raw, raw, remain_len);
+
+	struct proto_node* node = create_proto_node();
+	node->type = PROTO_RAW;
+	node->hdr = remain_raw;
+	return node;
+}
+
 struct proto_node* parse_ipv4_packet(struct raw_pack_stream* rps) {
 	const uint8_t* stream = rps_read_ptr(rps);
 	struct ipv4_header* ip_header = malloc(sizeof(struct ipv4_header));
@@ -40,6 +53,8 @@ struct proto_node* parse_ipv4_packet(struct raw_pack_stream* rps) {
 
 	rps_seek(rps, ihl * 4); // skip ipv4 header
 
+	uint16_t frag_offset = ip_header->flags_off & 0xD; // 13-bits
+
 	if (ip_header->proto == IPPROTO_TCP) {
 		ip_node->next = parse_tcp_packet(rps);
 	}
@@ -48,6 +63,9 @@ struct proto_node* parse_ipv4_packet(struct raw_pack_stream* rps) {
 	}
 	else if (ip_header->proto == IPPROTO_ICMP) {
 		ip_node->next = parse_icmp_packet(rps);
+	}
+	else if(frag_offset > 0) { // fragmented ip packet
+		ip_node->next = parse_raw_proto_node(rps);
 	}
 	return ip_node;
 }

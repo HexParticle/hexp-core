@@ -47,9 +47,9 @@ static void dump_ether_header(const struct ether_header* header) {
 
     printf("Ethernet(FROM %s TO %s)\n", src, dst);
 
-	if (header->vlan_count > 0) {
-		dump_vlan_tags(header->vlans, header->vlan_count);
-	}
+	// if (header->vlan_count > 0) {
+	// 	dump_vlan_tags(header->vlans, header->vlan_count);
+	// }
 }
 
 static void dump_ipv6_header(const struct ipv6_header* header) {

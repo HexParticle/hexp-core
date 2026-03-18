@@ -10,3 +10,5 @@ main.dSYM
 a.out*
 main
 .env
+**/*.elf
+**/*.macho

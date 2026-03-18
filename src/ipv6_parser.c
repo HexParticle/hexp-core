@@ -183,7 +183,6 @@ struct proto_node* parse_ipv6_packet(struct raw_pack_stream* stream) {
 	ip_node->type = PROTO_IPV6;
 	ip_node->hdr = ip_hdr;
 
-	printf("IPv6 seek here: %zu, total length: %zu\n", IPV6_HEADER_LEN, stream->length);
 	rps_seek(stream, IPV6_HEADER_LEN);
 
 	struct ipv6_ext_hdr_chain chain = parse_ipv6_ext_hdrs(ip_node, stream, ip_hdr->next_hdr);

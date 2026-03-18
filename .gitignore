@@ -9,5 +9,6 @@ main.dSYM
 **/*dSYM
 a.out*
 main
+.env
 **/*.elf
 **/*.macho

@@ -31,7 +31,7 @@ void free_hex_instance(HexInstnace_t* handle) {
 
 struct proto_node* read_next_packet(const HexInstnace_t* instance) {
 	struct pcap_pkthdr *header;
-	const char* stream;
+	const uint8_t* stream;
 	int res = pcap_next_ex(instance->handle, &header, &stream);
 
 	struct raw_pack_stream raw_stream = { .stream = stream, .length = header->caplen };

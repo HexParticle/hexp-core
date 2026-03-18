@@ -12,7 +12,7 @@
 
 #include <string.h>
 
-struct proto_node* parse_raw_proto_node(struct raw_pack_stream* rps) {
+static struct proto_node* parse_raw_proto_node(struct raw_pack_stream* rps) {
 	const uint8_t* raw = rps_read_ptr(rps);
 
 	size_t remain_len = rps->length - rps->read_off; // remaining length

@@ -9,3 +9,4 @@ main.dSYM
 **/*dSYM
 a.out*
 main
+.env

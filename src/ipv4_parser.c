@@ -68,19 +68,31 @@ struct proto_node* parse_ipv4_packet(struct raw_pack_stream* rps) {
 
 	// 	}
 	// 	else if(frag_mf == 0 && frag_offset > 0) { // last fragment
-	// 		ip_node->next = parse_raw_proto_node(rps);
 	// 		return NULL;
 	// 	}
 	// }
-	{
-		if (ip_header->proto == IPPROTO_TCP) {
-			ip_node->next = parse_tcp_packet(rps);
-		}
-		else if (ip_header->proto == IPPROTO_UDP) {
-			ip_node->next = parse_udp_packet(rps);
-		}
-		else if (ip_header->proto == IPPROTO_ICMP) {
-			ip_node->next = parse_icmp_packet(rps);
+	if (ip_header->proto == IPPROTO_TCP) {
+		ip_node->next = parse_tcp_packet(rps);
+	}
+	else if (ip_header->proto == IPPROTO_UDP) {
+		ip_node->next = parse_udp_packet(rps);
+	}
+	else if (ip_header->proto == IPPROTO_ICMP) {
+		ip_node->next = parse_icmp_packet(rps);
+	}
+	else {
+		switch (ip_header->proto) {
+			// ignore every protocol ID that we cannot parse, yet!
+			case IPPROTO_IGMP:
+			case IPPROTO_EIGRP:
+			case IPPROTO_OSPF:
+			case IPPROTO_TLSP: {
+				free_packet(ip_node);
+				return NULL;
+			}
+			default: {
+				ip_node->next = parse_raw_proto_node(rps);
+			}
 		}
 	}
 	return ip_node;

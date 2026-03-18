@@ -16,6 +16,10 @@
 #include "hex.h"
 #include "ip.h"
 
+#define IP_DF		0x4000		/* Flag: "Don't Fragment"	*/
+#define IP_MF		0x2000		/* Flag: "More Fragments"	*/
+#define IP_OFFSET	0x1FFF		/* "Fragment Offset" part	*/
+
 /**
  * IPv4 header
  */

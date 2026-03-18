@@ -9,3 +9,5 @@ main.dSYM
 **/*dSYM
 a.out*
 main
+**/*.elf
+**/*.macho

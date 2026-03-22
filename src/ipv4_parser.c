@@ -87,11 +87,11 @@ struct proto_node* parse_ipv4_packet(struct raw_pack_stream* rps) {
 			case IPPROTO_EIGRP:
 			case IPPROTO_OSPF:
 			case IPPROTO_TLSP: {
-				free_packet(ip_node);
-				return NULL;
+				break;
 			}
 			default: {
 				ip_node->next = parse_raw_proto_node(rps);
+				break;
 			}
 		}
 	}

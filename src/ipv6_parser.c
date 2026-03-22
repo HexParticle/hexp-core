@@ -185,13 +185,13 @@ struct proto_node* parse_ipv6_packet(struct raw_pack_stream* stream) {
 
 	rps_seek(stream, IPV6_HEADER_LEN);
 
-	struct ipv6_ext_hdr_chain chain = parse_ipv6_ext_hdrs(ip_node, stream, ip_hdr->next_hdr);
-	struct proto_node* last_node = chain.last_node;
+	// struct ipv6_ext_hdr_chain chain = parse_ipv6_ext_hdrs(ip_node, stream, ip_hdr->next_hdr);
+	struct proto_node* last_node = ip_node; // chain.last_node;
 
-	if (chain.next_proto == IPPROTO_TCP) {
+	if (ip_hdr->next_hdr == IPPROTO_TCP) {
 		last_node->next = parse_tcp_packet(stream);
 	}
-	else if (chain.next_proto == IPPROTO_UDP) {
+	else if (ip_hdr->next_hdr == IPPROTO_UDP) {
 		last_node->next = parse_udp_packet(stream);
 	}
 

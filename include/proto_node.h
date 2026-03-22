@@ -33,6 +33,7 @@ struct proto_node {
     enum proto_type 		type;
     void* 					hdr;
     uint32_t				hdr_len;
+    uint32_t				length;
     struct proto_node* 		next;
 };
 

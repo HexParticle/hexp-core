@@ -14,6 +14,7 @@ struct proto_node* create_proto_node(void) {
 		node->hdr 	= NULL;
 		node->next 	= NULL;
 		node->type 	= -1;
+        node->length = 0;
 	}
 	else {
 		fprintf(stderr, "malloc failed when creating a protocol node");

@@ -38,6 +38,7 @@ struct proto_node* read_next_packet(const HexInstnace_t* instance) {
 	
 	if (res == 1) {
 		struct proto_node* node = parse_ether_packet(&raw_stream);
+        node->length = header->caplen;
 		return node;
 	}
 

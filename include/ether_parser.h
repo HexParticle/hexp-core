@@ -44,9 +44,9 @@ struct __attribute__((packed)) ether_header {
     uint8_t  	dst_mac[MAC_ADDR_LEN]; /* Destination MAC address */
     uint16_t 	type;				   /* EtherType */
 
-	// VLAN support; beware when calculating ethernet header's size using
+	// VLAN support; be aware when calculating ethernet header's size using
 	// sizeof(struct ether_header). Always use ETH_HDR_SIZE.
-	int				vlan_count;
+	uint8_t			vlan_count;
 	struct vlan_tag	vlans[MAX_VLAN_STACK];
 };
 

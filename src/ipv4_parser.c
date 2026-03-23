@@ -60,17 +60,6 @@ struct proto_node* parse_ipv4_packet(struct raw_pack_stream* rps) {
 
 	bool is_fragmented = (frag_mf == 1) || (frag_offset > 0);
 
-	// if (is_fragmented) {
-	// 	if (frag_mf == 1 && frag_offset == 0) { // first fragment
-
-	// 	}
-	// 	else if (frag_mf == 1 && frag_offset > 0) { // middle fragments
-
-	// 	}
-	// 	else if(frag_mf == 0 && frag_offset > 0) { // last fragment
-	// 		return NULL;
-	// 	}
-	// }
 	if (ip_header->proto == IPPROTO_TCP) {
 		ip_node->next = parse_tcp_packet(rps);
 	}

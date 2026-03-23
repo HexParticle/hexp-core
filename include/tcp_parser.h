@@ -14,6 +14,12 @@
 #include "proto_node.h"
 #include "raw_stream.h"
 
+struct __attribute__((packed)) tcp_option {
+	uint8_t	kind;
+	uint8_t length;
+	uint8_t data[];
+};
+
 /**
  * TCP header
  */
@@ -27,7 +33,7 @@ struct __attribute__((packed)) tcp_header {
     uint16_t    win;
     uint16_t    chk;
     uint16_t    urg;
-    uint8_t     options[];
+    struct tcp_option  options[];
 };
 
 HEX_P struct proto_node* parse_tcp_packet(struct raw_pack_stream*);

@@ -31,7 +31,10 @@ static inline int is_ipv6_ext(uint8_t nh) {
         case IPV6_EXT_ESP:
         case IPV6_EXT_AUTH_HDR:
         case IPV6_EXT_DEST_OPTS:
+		case IPV6_EXT_MOBILITY:
             return 1;
+		case 59: // explicit stop notification
+			return 0;
         default:
             return 0;
     }
@@ -186,14 +189,33 @@ struct proto_node* parse_ipv6_packet(struct raw_pack_stream* stream) {
 	rps_seek(stream, IPV6_HEADER_LEN);
 
 	// struct ipv6_ext_hdr_chain chain = parse_ipv6_ext_hdrs(ip_node, stream, ip_hdr->next_hdr);
-	struct proto_node* last_node = ip_node; // chain.last_node;
+	// struct proto_node* last_node = chain.last_node;
+	
+	// SKIPPING EVERY EXTENSION HEADER FOR NOW!!!
+	uint8_t next_hdr = ip_hdr->next_hdr;
 
-	if (ip_hdr->next_hdr == IPPROTO_TCP) {
-		last_node->next = parse_tcp_packet(stream);
-	}
-	else if (ip_hdr->next_hdr == IPPROTO_UDP) {
-		last_node->next = parse_udp_packet(stream);
+	while (is_ipv6_ext(next_hdr)) {
+		struct ipv6_ext_base* ext_base = (struct ipv6_ext_base*) rps_read_ptr(stream);
+		size_t ext_hdr_len = 0;
+
+		if (next_hdr == IPV6_EXT_FRAGMENT) {
+        	ext_hdr_len = 8; // frag header is always 8 bytes fixed
+    	}
+		else {
+    		// standard RFC formula: (Length Field + 1) * 8
+    		ext_hdr_len = (size_t) (ext_base->hdr_ext_len + 1) * 8;
+		}
+
+		next_hdr = ext_base->next_hdr;
+		rps_seek(stream, ext_hdr_len);
 	}
 
-	return last_node;
+	if (next_hdr == IPPROTO_TCP) {
+		ip_node->next = parse_tcp_packet(stream);
+	}
+	else if (next_hdr == IPPROTO_UDP) {
+		ip_node->next = parse_udp_packet(stream);
+	}
+
+	return ip_node;
 }

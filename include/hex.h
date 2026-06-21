@@ -19,7 +19,12 @@
  * @brief Container for the libpcap session handle.
  */
 typedef struct _HexInstnace {
-    pcap_t* 	handle;	/* libpcap session handle */
+    pcap_t* 				handle;	/* libpcap session handle */
+	char* 					device;
+	char* 					errbuff;
+	struct bpf_program		program;
+	bpf_u_int32 			mask;
+	bpf_u_int32 			net;
 } HexInstnace_t;
 
 /**
@@ -44,6 +49,8 @@ HEX_P void free_hex_instance(HexInstnace_t* handle);
  * to prevent memory leaks.
  */
 HEX_P struct proto_node* read_next_packet(const HexInstnace_t* handle);
+
+HEX_P int apply_filter(const HexInstnace_t* handle, const char* filter);
 
 HEX_P void free_packet(struct proto_node* node);
 

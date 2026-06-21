@@ -160,42 +160,7 @@ static void dump_node(struct proto_node *node) {
     printf("\n");
 }
 
-#ifdef RUN_MAIN
-/*
-int main() {
-    const char *input = "from ip 192.8.9.0 to ip 192.123.123.123";
-	struct token* tokens = malloc(sizeof(struct token) * 100);
-    struct token tok;
-
-	int i = 0;
-    while ((tok = next_token(&input)).type != TOKEN_EOF) {
-		*(tokens + i) = tok;
-        i += 1;
-    }
-
-	struct parser_ctx ctx = {.tokens = tokens, .current = 0, .total = i};
-	struct stmt* s = parse_from_stmt(&ctx);
-
-	if (s) {
-		sds buffer = sdsempty();
-		int res = bpf_gen_stmt(s, &buffer);
-
-		if (res >= 0) {
-			fprintf(stdout, "%s\n", buffer);
-		}
-		
-		free_stmt(s);
-		sdsfree(buffer);
-	}
-	else {
-		fprintf(stderr, "Couldn't parse a statement");
-	}
-
-	free(tokens);
-    return 0;
-}
-	*/
-
+#if RUN_MAIN
 int main(int argc, char** argv) {
 	HexInstnace_t instance = create_hex_instance("en0");
 

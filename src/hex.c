@@ -12,7 +12,7 @@
 #include <string.h>
 
 HexInstnace_t* create_hex_instance(const char* source, int mode) {
-	char* errbuff = malloc(PCAP_ERRBUF_SIZE);
+	char errbuff[PCAP_ERRBUF_SIZE];
 	char* dev = strdup(source);
 
 	struct bpf_program program;
@@ -52,7 +52,6 @@ HexInstnace_t* create_hex_instance(const char* source, int mode) {
 
 	HexInstnace_t* instance = malloc(sizeof(HexInstnace_t));
 	instance->handle = handle;
-	instance->errbuff = errbuff;
 	instance->source = dev;
 	instance->mask = mask;
 	instance->net = net;
@@ -67,7 +66,6 @@ void free_hex_instance(HexInstnace_t* handle) {
 	pcap_close(handle->handle);
 	pcap_freecode(&handle->program);
 
-	if (handle->errbuff) free(handle->errbuff);
     if (handle->source) free(handle->source);
 
 	free(handle);
@@ -82,14 +80,16 @@ struct proto_node* read_next_packet(const HexInstnace_t* instance) {
 	
 	if (res == 1) {
 		struct proto_node* node = parse_ether_packet(&raw_stream);
-        node->length = header->caplen;
-		return node;
+		if (node != NULL) {
+        	node->length = header->caplen;
+			return node;
+		}
 	}
 
 	return NULL;
 }
 
-HEX_P int apply_filter(const HexInstnace_t* handle, const char* filter) {
+HEX_P int apply_filter(HexInstnace_t* handle, const char* filter) {
 	pcap_freecode(&handle->program); // freeing previously compiled bytecode
 
 	if (pcap_compile(handle->handle, &handle->program, filter, 0, handle->net) == -1) {

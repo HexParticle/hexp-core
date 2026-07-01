@@ -24,7 +24,6 @@
 typedef struct _HexInstnace {
     pcap_t* 				handle;	/* libpcap session handle */
 	char* 					source;
-	char* 					errbuff;
 	struct bpf_program		program;
 	bpf_u_int32 			mask;
 	bpf_u_int32 			net;
@@ -53,7 +52,7 @@ HEX_P void free_hex_instance(HexInstnace_t* handle);
  */
 HEX_P struct proto_node* read_next_packet(const HexInstnace_t* handle);
 
-HEX_P int apply_filter(const HexInstnace_t* handle, const char* filter);
+HEX_P int apply_filter(HexInstnace_t* handle, const char* filter);
 
 HEX_P void free_packet(struct proto_node* node);
 

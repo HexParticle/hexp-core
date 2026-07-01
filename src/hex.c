@@ -11,30 +11,42 @@
 #include <stdlib.h>
 #include <string.h>
 
-HexInstnace_t create_hex_instance(const char* device) {
+HexInstnace_t create_hex_instance(const char* source, int mode) {
 	char* errbuff = malloc(PCAP_ERRBUF_SIZE);
-	char* dev = strdup(device);
+	char* dev = strdup(source);
 
 	struct bpf_program program;
 	bpf_u_int32 mask;
     bpf_u_int32 net;
 
-	if (pcap_lookupnet(device, &net, &mask, errbuff) == -1) {
-        fprintf(stderr, "Warning: Can't get netmask for device %s: %s\n", device, errbuff);
+	if (pcap_lookupnet(source, &net, &mask, errbuff) == -1) {
+        fprintf(stderr, "Warning: Can't get netmask for device %s: %s\n", source, errbuff);
         net = 0;
         mask = 0;
     }
 
-    pcap_t* handle = pcap_open_live(device, BUFSIZ, 1, 1000, errbuff);
+	pcap_t* handle = NULL;
+
+	if (mode == HEX_LIVE_MODE) {
+		handle = pcap_open_live(source, BUFSIZ, 1, 1000, errbuff);
+	}
+	else if (mode == HEX_OFFLINE_MODE) {
+		handle = pcap_open_offline(source, errbuff);
+	}
+	else {
+		fprintf(stderr, "Unknown capture mode '%d'\n", mode);
+		exit(1);
+	}
+
     if (!handle) {
-        fprintf(stderr, "Couldn't open device %s: %s\n", device, errbuff);
+        fprintf(stderr, "Couldn't open device %s: %s\n", source, errbuff);
         exit(EXIT_FAILURE);
     }
 
 	return (HexInstnace_t) { 
 		.handle = handle, 
 		.errbuff = errbuff, 
-		.device = dev,
+		.source = source,
 		.mask = mask,
 		.net = net,
 		.program = program
@@ -48,7 +60,7 @@ void free_hex_instance(HexInstnace_t* handle) {
 	pcap_freecode(&handle->program);
 
 	if (handle->errbuff) free(handle->errbuff);
-    if (handle->device) free(handle->device);
+    if (handle->source) free(handle->source);
 
 	handle->handle = NULL;
 }

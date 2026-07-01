@@ -11,10 +11,6 @@
 #include "udp_parser.h"
 #include "arp_parser.h"
 #include "icmp.h"
-#include "netdsl/tokenizer.h"
-#include "netdsl/token.h"
-#include "netdsl/parser.h"
-#include "netdsl/bpf_gen.h"
 #include "sds/sds.h"
 
 #include <stdlib.h>

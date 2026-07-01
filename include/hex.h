@@ -14,13 +14,16 @@
 #ifndef HEX_PARTICLE_ANALYZER_H
 #define HEX_PARTICLE_ANALYZER_H
 
+#define HEX_LIVE_MODE		0x1
+#define HEX_OFFLINE_MODE	0x2
+
 /**
  * @struct HexInstance_t
  * @brief Container for the libpcap session handle.
  */
 typedef struct _HexInstnace {
     pcap_t* 				handle;	/* libpcap session handle */
-	char* 					device;
+	char* 					source;
 	char* 					errbuff;
 	struct bpf_program		program;
 	bpf_u_int32 			mask;
@@ -33,7 +36,7 @@ typedef struct _HexInstnace {
  * @return A HexInstnace_t structure containing the active pcap handle.
  * @note This function will terminate the process if the device cannot be opened.
  */
-HEX_P HexInstnace_t create_hex_instance(const char* device);
+HEX_P HexInstnace_t create_hex_instance(const char* source, int mode);
 
 /**
  * @brief Closes the pcap handle and releases associated instance memory.

@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-HexInstnace_t create_hex_instance(const char* source, int mode) {
+HexInstnace_t* create_hex_instance(const char* source, int mode) {
 	char* errbuff = malloc(PCAP_ERRBUF_SIZE);
 	char* dev = strdup(source);
 
@@ -19,15 +19,16 @@ HexInstnace_t create_hex_instance(const char* source, int mode) {
 	bpf_u_int32 mask;
     bpf_u_int32 net;
 
-	if (pcap_lookupnet(source, &net, &mask, errbuff) == -1) {
-        fprintf(stderr, "Warning: Can't get netmask for device %s: %s\n", source, errbuff);
-        net = 0;
-        mask = 0;
-    }
-
 	pcap_t* handle = NULL;
+	int must_exit = 0;
 
 	if (mode == HEX_LIVE_MODE) {
+		if (pcap_lookupnet(source, &net, &mask, errbuff) == -1) {
+        	fprintf(stderr, "Warning: Can't get netmask for device %s: %s\n", source, errbuff);
+        	net = 0;
+        	mask = 0;
+    	}
+
 		handle = pcap_open_live(source, BUFSIZ, 1, 1000, errbuff);
 	}
 	else if (mode == HEX_OFFLINE_MODE) {
@@ -35,22 +36,29 @@ HexInstnace_t create_hex_instance(const char* source, int mode) {
 	}
 	else {
 		fprintf(stderr, "Unknown capture mode '%d'\n", mode);
-		exit(1);
+		must_exit = 1;
 	}
 
     if (!handle) {
         fprintf(stderr, "Couldn't open device %s: %s\n", source, errbuff);
-        exit(EXIT_FAILURE);
+        must_exit = 1;
     }
 
-	return (HexInstnace_t) { 
-		.handle = handle, 
-		.errbuff = errbuff, 
-		.source = source,
-		.mask = mask,
-		.net = net,
-		.program = program
-	};
+	if (must_exit == 1) {
+		free(dev);
+        free(errbuff);
+        exit(EXIT_FAILURE);
+	}
+
+	HexInstnace_t* instance = malloc(sizeof(HexInstnace_t));
+	instance->handle = handle;
+	instance->errbuff = errbuff;
+	instance->source = dev;
+	instance->mask = mask;
+	instance->net = net;
+	instance->program = program;
+
+	return instance;
 }
 
 void free_hex_instance(HexInstnace_t* handle) {
@@ -62,7 +70,7 @@ void free_hex_instance(HexInstnace_t* handle) {
 	if (handle->errbuff) free(handle->errbuff);
     if (handle->source) free(handle->source);
 
-	handle->handle = NULL;
+	free(handle);
 }
 
 struct proto_node* read_next_packet(const HexInstnace_t* instance) {

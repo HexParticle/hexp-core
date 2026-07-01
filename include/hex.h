@@ -36,7 +36,7 @@ typedef struct _HexInstnace {
  * @return A HexInstnace_t structure containing the active pcap handle.
  * @note This function will terminate the process if the device cannot be opened.
  */
-HEX_P HexInstnace_t create_hex_instance(const char* source, int mode);
+HEX_P HexInstnace_t* create_hex_instance(const char* source, int mode);
 
 /**
  * @brief Closes the pcap handle and releases associated instance memory.

@@ -7,6 +7,7 @@ bin/
 *.S
 main.dSYM
 **/*dSYM
+**/*.DS_Store
 a.out*
 main
 .env

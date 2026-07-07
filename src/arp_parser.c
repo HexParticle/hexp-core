@@ -26,6 +26,8 @@ struct proto_node* parse_arp_packet(struct raw_pack_stream* rps) {
 	arp_node->hdr = arp_hdr;
 	arp_node->hdr_len = arp_header_size;
 
-	rps_seek(rps, arp_header_size);
+	if (rps_seek(rps, arp_header_size) == -1) {
+		fprintf(stderr, "coudld not seek arp header");
+	}
 	return arp_node;
 }

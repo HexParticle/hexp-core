@@ -3,8 +3,8 @@
  * Copyright (c) 2023 Kagati Foundation
  */
 
-#ifndef ARP_PARSER_H
-#define ARP_PARSER_H
+#ifndef _ARP_PARSER_H_
+#define _ARP_PARSER_H_
 
 #include "hex.h"
 #include "proto_node.h"
@@ -13,7 +13,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <arpa/inet.h>
 
 #define ARP_REQUEST		1 /* ARP request */
 #define ARP_REPLY		2 /* ARP reply */

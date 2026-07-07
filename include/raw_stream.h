@@ -18,7 +18,7 @@ struct raw_pack_stream {
 
 struct raw_pack_stream rps_create(const uint8_t* data, size_t length);
 
-void rps_seek(struct raw_pack_stream*, size_t);
+int rps_seek(struct raw_pack_stream*, size_t);
 
 const uint8_t* rps_read_ptr(struct raw_pack_stream*);
 

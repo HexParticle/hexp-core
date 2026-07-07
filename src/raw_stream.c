@@ -17,8 +17,11 @@ struct raw_pack_stream rps_create(const uint8_t* data, size_t length) {
 	return stream;
 }
 
-void rps_seek(struct raw_pack_stream* rps, size_t n) {
-	if (rps == NULL || rps->stream == NULL) return;
+/**
+ * @returns `-1` on failure. Otherwise returns the number of bytes that were skipped.
+ */
+int rps_seek(struct raw_pack_stream* rps, size_t n) {
+	if (rps == NULL || rps->stream == NULL) return -1;
 
 	if ((rps->read_off + n) > rps->length) {
 		fprintf(
@@ -29,11 +32,12 @@ void rps_seek(struct raw_pack_stream* rps, size_t n) {
 			(rps->read_off + n) - rps->length,
 			rps->read_off
 		);
-		exit(EXIT_FAILURE);
+		return -1;
 	}
 
 	rps->payload_len = rps->length - rps->read_off;
 	rps->read_off += n;
+	return n;
 }
 
 const uint8_t* rps_read_ptr(struct raw_pack_stream* rps) {

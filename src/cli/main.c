@@ -163,13 +163,17 @@ static void dump_node(struct proto_node *node) {
 }
 
 int main(int argc, char** argv) {
-	HexInstnace_t* instance = create_hex_instance("en0", HEX_LIVE_MODE);
+	HexInstnace_t* instance = create_hex_instance("/Users/rigelstar/Downloads/arpspoof.pcap", HEX_OFFLINE_MODE);
 
 	while (1) {
 		struct proto_node* result = read_next_packet(instance);
-		if (result != NULL) {
+		if (result != NULL && instance->status == HEX_STATUS_OK) {
 			dump_node(result);
 			free_packet(result);
+		}
+
+		if (instance->status == HEX_STATUS_EOF) {
+			break;
 		}
 	}
 

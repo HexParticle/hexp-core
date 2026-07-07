@@ -20,7 +20,6 @@ HexInstnace_t* create_hex_instance(const char* source, int mode) {
     bpf_u_int32 net;
 
 	pcap_t* handle = NULL;
-	int must_exit = 0;
 
 	if (mode == HEX_LIVE_MODE) {
 		if (pcap_lookupnet(source, &net, &mask, errbuff) == -1) {
@@ -36,19 +35,13 @@ HexInstnace_t* create_hex_instance(const char* source, int mode) {
 	}
 	else {
 		fprintf(stderr, "Unknown capture mode '%d'\n", mode);
-		must_exit = 1;
+		goto failure;
 	}
 
     if (!handle) {
         fprintf(stderr, "Couldn't open device %s: %s\n", source, errbuff);
-        must_exit = 1;
+		goto failure;
     }
-
-	if (must_exit == 1) {
-		free(dev);
-        free(errbuff);
-        exit(EXIT_FAILURE);
-	}
 
 	HexInstnace_t* instance = malloc(sizeof(HexInstnace_t));
 	instance->handle = handle;
@@ -56,8 +49,13 @@ HexInstnace_t* create_hex_instance(const char* source, int mode) {
 	instance->mask = mask;
 	instance->net = net;
 	instance->program = program;
+	instance->status = HEX_STATUS_OK;
 
 	return instance;
+
+failure:
+	free(dev);
+    exit(EXIT_FAILURE);
 }
 
 void free_hex_instance(HexInstnace_t* handle) {
@@ -71,7 +69,7 @@ void free_hex_instance(HexInstnace_t* handle) {
 	free(handle);
 }
 
-struct proto_node* read_next_packet(const HexInstnace_t* instance) {
+struct proto_node* read_next_packet(HexInstnace_t* instance) {
 	struct pcap_pkthdr *header;
 	const uint8_t* stream;
 	int res = pcap_next_ex(instance->handle, &header, &stream);
@@ -82,8 +80,22 @@ struct proto_node* read_next_packet(const HexInstnace_t* instance) {
 		struct proto_node* node = parse_ether_packet(&raw_stream);
 		if (node != NULL) {
         	node->length = header->caplen;
+
+			// successful parse
+			instance->status = HEX_STATUS_OK;
+
 			return node;
 		}
+	}
+	else if (res == 0) {
+		instance->status = HEX_STATUS_TIMEOUT;
+		fprintf(stderr, "pcap_next_ex timedout");
+	}
+	else if (res == PCAP_ERROR_BREAK) { // eof
+		instance->status = HEX_STATUS_EOF;
+	}
+	else if (res == PCAP_ERROR) {
+		instance->status = HEX_STATUS_ERROR;
 	}
 
 	return NULL;

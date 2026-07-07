@@ -4,6 +4,7 @@
  */
 
 #include "hex.h"
+#include "net_if.h"
 #include "ether_parser.h"
 #include "ipv4_parser.h"
 #include "ipv6_parser.h"
@@ -18,9 +19,12 @@
 #include <stdint.h>
 
 static void mac_to_string(const uint8_t mac[6], char *out) {
-    sprintf(out, "%02X:%02X:%02X:%02X:%02X:%02X",
-            mac[0], mac[1], mac[2],
-            mac[3], mac[4], mac[5]);
+    sprintf(
+		out,
+		"%02X:%02X:%02X:%02X:%02X:%02X",
+        mac[0], mac[1], mac[2],
+        mac[3], mac[4], mac[5]
+	);
 }
 
 static void ipv4_to_string(const uint8_t ip[4], char *out) {
@@ -28,13 +32,15 @@ static void ipv4_to_string(const uint8_t ip[4], char *out) {
 }
 
 static void ipv6_to_string(const uint8_t ip[16], char *out) {
-    sprintf(out,
+    sprintf(
+		out,
         "%02x%02x:%02x%02x:%02x%02x:%02x%02x:"
         "%02x%02x:%02x%02x:%02x%02x:%02x%02x",
         ip[0], ip[1], ip[2], ip[3],
         ip[4], ip[5], ip[6], ip[7],
         ip[8], ip[9], ip[10], ip[11],
-        ip[12], ip[13], ip[14], ip[15]);
+        ip[12], ip[13], ip[14], ip[15]
+	);
 }
 
 static void dump_ether(const struct ether_header *h) {
@@ -109,7 +115,7 @@ static void dump_arp(const struct arp_header *h) {
     ipv4_to_string(h->tpa, tpa);
 
     if (h->op == ARP_REQUEST) {
-        printf(" | ARP who-has %s? tell %s", tpa, sha);
+        printf(" | ARP who has %s? tell %s", tpa, sha);
     } else if (h->op == ARP_REPLY) {
         printf(" | ARP %s is-at %s", spa, sha);
     } else {
@@ -122,32 +128,32 @@ static void dump_node(struct proto_node *node) {
 
     while (cur) {
         switch (cur->type) {
-        case PROTO_ETH:
-            dump_ether((struct ether_header *)cur->hdr);
-            break;
+        	case PROTO_ETH:
+            	dump_ether((struct ether_header *)cur->hdr);
+            	break;
 
-        case PROTO_IPV4:
-            dump_ipv4((struct ipv4_header *)cur->hdr);
-            break;
+        	case PROTO_IPV4:
+            	dump_ipv4((struct ipv4_header *)cur->hdr);
+            	break;
 
-        case PROTO_IPV6:
-            dump_ipv6((struct ipv6_header *)cur->hdr);
-            break;
+        	case PROTO_IPV6:
+            	dump_ipv6((struct ipv6_header *)cur->hdr);
+            	break;
 
-        case PROTO_TCP:
-            dump_tcp((struct tcp_header *)cur->hdr);
-            break;
+        	case PROTO_TCP:
+            	dump_tcp((struct tcp_header *)cur->hdr);
+            	break;
 
-        case PROTO_UDP:
-            dump_udp((struct udp_header *)cur->hdr);
-            break;
+        	case PROTO_UDP:
+            	dump_udp((struct udp_header *)cur->hdr);
+            	break;
 
-        case PROTO_ARP:
-            dump_arp((struct arp_header *)cur->hdr);
-            break;
+        	case PROTO_ARP:
+            	dump_arp((struct arp_header *)cur->hdr);
+            	break;
 
-        default:
-            printf(" | UNKNOWN");
+        	default:
+            	printf(" | UNKNOWN");
         }
 
         cur = cur->next;
@@ -156,19 +162,16 @@ static void dump_node(struct proto_node *node) {
     printf("\n");
 }
 
-#if RUN_MAIN
 int main(int argc, char** argv) {
-	HexInstnace_t instance = create_hex_instance("en0");
+	HexInstnace_t* instance = create_hex_instance("en0", HEX_LIVE_MODE);
 
 	while (1) {
-		struct proto_node* result = read_next_packet(&instance);
+		struct proto_node* result = read_next_packet(instance);
 		if (result != NULL) {
 			dump_node(result);
 			free_packet(result);
 		}
 	}
 
-	free_hex_instance(&instance);
+	free_hex_instance(instance);
 }
-
-#endif

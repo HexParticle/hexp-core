@@ -81,7 +81,7 @@ void free_interfaces_names(char **names, int count) {
 #include <net/if.h>
 #include <unistd.h>
 
-// I did not copy this code from Internet. Look how slick it is(unlike MacOS). Sweet Linux.
+// I did not copy this code from Internet. Look how slick it is (unlike MacOS). Sweet Linux.
 int is_wireless(const char *ifname) {
     int sock;
     if ((sock = socket(AF_INET, SOCK_DGRAM, 0) < 0)) {
@@ -102,7 +102,7 @@ int is_wireless(const char *ifname) {
 #include <SystemConfiguration/SystemConfiguration.h>
 #include <CoreFoundation/CoreFoundation.h>
 
-// I copied this code from Internet. Look at this mess LMAO. Damn you, MacOS.
+// I copied this code from Internet. Look at all these messy typedefs LMAO. Damn you, MacOS.
 int is_wireless(const char *ifname) {
     CFArrayRef interfaces = SCNetworkInterfaceCopyAll();
     for (CFIndex i = 0; i < CFArrayGetCount(interfaces); i++) {

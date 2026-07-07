@@ -9,16 +9,12 @@
 #include <stdlib.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <sys/types.h>
 #include <ifaddrs.h>
 
-// Check if the interface is Wi-Fi
-int is_wireless(const char *ifname);
+#include "net_if.h"
 
-typedef uint64_t usize;
-
-char **get_all_interfaces_names(usize *count) {
+char **get_all_interfaces_names(uint64_t *count) {
     int capacity = 10;
     int index = 0;
 

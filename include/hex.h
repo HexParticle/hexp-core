@@ -3,6 +3,9 @@
  * Copyright (c) 2023 Kagati Foundation
  */
 
+#ifndef _HEX_PARTICLE_ANALYZER_H_
+#define _HEX_PARTICLE_ANALYZER_H_
+
 #include <pcap.h>
 #include "proto_node.h"
 
@@ -10,9 +13,6 @@
 #define HEX_P
 
 #define HEX_OUT_BUF_SIZE 4096
-
-#ifndef HEX_PARTICLE_ANALYZER_H
-#define HEX_PARTICLE_ANALYZER_H
 
 #define HEX_LIVE_MODE		0x1
 #define HEX_OFFLINE_MODE	0x2

@@ -12,7 +12,6 @@
 #include "udp_parser.h"
 #include "arp_parser.h"
 #include "icmp.h"
-#include "sds/sds.h"
 #include "arp_cache.h"
 
 #include <stdlib.h>

@@ -127,7 +127,7 @@ static void dump_cache_table() {
 static void on_arp_spoof_detected(struct arp_alert* alert) {
 	uint32_t ip_addr = alert->ip_address;
 	uint8_t* old_mac = alert->cached_mac;
-	uint8_t* new_mac = alert->cached_mac;
+	uint8_t* new_mac = alert->poison_mac;
 
 	uint8_t ip_str[16];
 

@@ -59,6 +59,8 @@ failure:
 }
 
 void free_hex_instance(HexInstnace_t* handle) {
+	printf("Deleting HexInstance... ");
+
 	if (handle == NULL || handle->handle == NULL) return;
 
 	pcap_close(handle->handle);
@@ -67,6 +69,8 @@ void free_hex_instance(HexInstnace_t* handle) {
     if (handle->source) free(handle->source);
 
 	free(handle);
+
+	printf("deleted!\n");
 }
 
 struct proto_node* read_next_packet(HexInstnace_t* instance) {

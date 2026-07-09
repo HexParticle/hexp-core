@@ -24,6 +24,8 @@ struct packet_queue {
 
 struct packet_queue* packet_queue_init(void);
 
+void free_packet_queue(struct packet_queue* q);
+
 bool packet_queue_enqueue(struct packet_queue* q, const struct proto_node* node);
 
 bool packet_queue_dequeue(struct packet_queue* q, struct proto_node* node);

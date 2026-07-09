@@ -18,6 +18,13 @@ struct packet_queue* packet_queue_init(void) {
 	return q;
 }
 
+void free_packet_queue(struct packet_queue* q) {
+	if (q == NULL) return;
+
+	pthread_mutex_destroy(&q->__queue_lock);
+	free(q);
+}
+
 bool packet_queue_enqueue(struct packet_queue* q, const struct proto_node* node) {
 	if (q == NULL || node == NULL) return false;
 

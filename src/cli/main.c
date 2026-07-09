@@ -163,7 +163,7 @@ static void dump_node(struct proto_node *node) {
 }
 
 int main(int argc, char** argv) {
-	HexInstnace_t* instance = create_hex_instance("/Users/rigelstar/Downloads/arpspoof.pcap", HEX_OFFLINE_MODE);
+	HexInstnace_t* instance = create_hex_instance("/Users/rigelstar/Downloads/spoof-arp.pcapng", HEX_OFFLINE_MODE);
 
 	while (1) {
 		struct proto_node* result = read_next_packet(instance);
@@ -173,6 +173,7 @@ int main(int argc, char** argv) {
 		}
 
 		if (instance->status == HEX_STATUS_EOF) {
+			fprintf(stdout, "=== Reached EOF. Exiting... ===\n");
 			break;
 		}
 	}

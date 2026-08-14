@@ -56,9 +56,12 @@ void analyze_arp_packet(const struct arp_header* hdr) {
 
 			char ip_str[16];
 					 
-            sprintf(ip_str, "%d.%d.%d.%d", 
-                    (sender_ip & 0xFF), ((sender_ip >> 8) & 0xFF), 
-                    ((sender_ip >> 16) & 0xFF), ((sender_ip >> 24) & 0xFF));
+            sprintf(
+				ip_str, 
+				"%d.%d.%d.%d", 
+                (sender_ip & 0xFF), ((sender_ip >> 8) & 0xFF), 
+                ((sender_ip >> 16) & 0xFF), ((sender_ip >> 24) & 0xFF)
+			);
 
 			struct arp_alert alert;
 			alert.ip_address = sender_ip;

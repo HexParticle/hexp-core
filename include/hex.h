@@ -6,8 +6,12 @@
 #ifndef _HEX_PARTICLE_ANALYZER_H_
 #define _HEX_PARTICLE_ANALYZER_H_
 
+#include <pthread.h>
+
 #include <pcap.h>
+
 #include "proto_node.h"
+#include "ring_buffer.h"
 
 /* Macro for symbol visibility, currently empty */
 #define HEX_P
@@ -21,7 +25,8 @@ typedef enum hex_status {
     HEX_STATUS_OK = 0,         // Packet read successfully
     HEX_STATUS_TIMEOUT,        // Live capture timeout
     HEX_STATUS_EOF,            // Offline file reached End-Of-File 
-    HEX_STATUS_ERROR           // Interface error or packet read failure 
+    HEX_STATUS_ERROR,          // Interface error or packet read failure 
+    HEX_STATUS_QUEUE_FULL,     // Ring buffer is full
 } hex_status_t;
 
 /**
@@ -29,12 +34,20 @@ typedef enum hex_status {
  * @brief Container for the libpcap session handle.
  */
 typedef struct _HexInstnace {
-    pcap_t* 				handle;	/* libpcap session handle */
-	char* 					source;
+    pcap_t* 				handle;	/** libpcap session handle */
+	char* 					source; /** Source is either an interface or a 'savefile' name. */
 	struct bpf_program		program;
 	bpf_u_int32 			mask;
 	bpf_u_int32 			net;
 	enum hex_status			status;
+
+	struct ring_buffer*		__raw_packs; /** Captured packets */
+	struct ring_buffer*		__processed_packs; /** Processed packets */
+
+	// threads
+	pthread_t				__capture_t;
+	pthread_t				__processing_t;
+	_Atomic int 			__stop_req;
 } HexInstnace_t;
 
 /**
@@ -68,10 +81,15 @@ HEX_P void free_hex_instance(HexInstnace_t* handle);
  * @warning Returns heap-allocated memory. Caller must use free_protocol_node() 
  * to prevent memory leaks.
  */
-HEX_P struct proto_node* read_next_packet(HexInstnace_t* handle);
+HEX_P struct proto_node* next_packet(HexInstnace_t* handle);
 
 HEX_P int apply_filter(HexInstnace_t* handle, const char* filter);
 
 HEX_P void free_packet(struct proto_node* node);
+
+struct raw_packet {
+    uint8_t *data;
+    uint32_t length;
+};
 
 #endif

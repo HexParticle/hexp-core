@@ -175,6 +175,8 @@ static void dump_node(struct proto_node *node) {
     struct proto_node *cur = node;
 
     while (cur) {
+		printf("Protocol type: %d\n", cur->type);
+
         switch (cur->type) {
         	case PROTO_ETH:
             	dump_ether((struct ether_header *)cur->hdr);
@@ -216,10 +218,18 @@ int main(int argc, char** argv) {
 	register_arp_alert_callback(on_arp_spoof_detected);
 
 	while (1) {
-		struct proto_node* result = read_next_packet(instance);
+		struct proto_node* result = next_packet(instance);
+
 		if (result != NULL && instance->status == HEX_STATUS_OK) {
 			dump_node(result);
 			free_packet(result);
+		}
+		else {
+			if (result == NULL) {
+				puts("is null");
+			}
+
+			printf("%d\n", instance->status);
 		}
 
 		if (instance->status == HEX_STATUS_EOF) {
